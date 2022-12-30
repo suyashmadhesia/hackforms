@@ -5,11 +5,13 @@ import { HYDRATE } from "next-redux-wrapper";
 export interface CreateFormState {
     title: string
     tabName: string
+    access: string
 }
 
 const initialState: CreateFormState = {
     title: 'Untitled',
-    tabName: 'create'
+    tabName: 'create',
+    access: 'private'
 }
 
 export const createFormSlice = createSlice({
@@ -24,6 +26,9 @@ export const createFormSlice = createSlice({
         },
         setTabIndex(state, action: PayloadAction<string>) {
             state.tabName = action.payload;
+        },
+        setAccess(state, action: PayloadAction<string>) {
+            state.access = action.payload;
         }
     },
     extraReducers: {

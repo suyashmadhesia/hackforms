@@ -5,14 +5,15 @@ import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Tabs, { TabsProps } from '@mui/material/Tabs';
 import Tab, { TabProps } from '@mui/material/Tab';
 import TextField from '@mui/material/TextField';
-import Button, { ButtonProps } from '@mui/material/Button';
-import { grey } from '@mui/material/colors';
+import Button from '@mui/material/Button';
+
 
 
 import { useAppSelector } from '../../../store/hooks';
 import {createFormActions} from '../../../store/createFormSlice';
-import { styled } from '@mui/material';
-
+import {  styled } from '@mui/material';
+import {colors} from '../../../styles/theme';
+import AccessSelector from '../AccessSelector';
 
 const StyledTabs = styled((props: TabsProps) => (
     <Tabs 
@@ -46,12 +47,16 @@ const StyledTab = styled((props: TabProps) => (
     },
 }));
 
-const StyledButton = styled(Button)({})
+
 
 
 export default function CreateFormHeader() {
 
-    const [title, tabName] = useAppSelector(state => [state.createForm.title, state.createForm.tabName]);
+    const [title, tabName, access] = useAppSelector(state => [state.createForm.title, 
+        state.createForm.tabName,
+        state.createForm.access
+    ]);
+
     const dispatch = useDispatch();
 
     const onTitleValueInput = (value: string) => {
@@ -62,12 +67,19 @@ export default function CreateFormHeader() {
         dispatch(createFormActions.setTabIndex(name));
     }
 
+    const onAccessChange = (val: string) => {
+
+    }
+
+    const onPublishClick = () => {}
+
     return <Box component="div" sx={{
         display: 'grid',
         height: '100%',
         width: '100%',
         gridTemplateAreas: `"crumbs tabs tabs tabs tabs control"`,
-        padding: '0.5rem'
+        padding: '0.5rem',
+        maxWidth: '100%'
     }}>
 
         {/* Breadcrumb for title */}
@@ -75,7 +87,9 @@ export default function CreateFormHeader() {
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
-            paddingLeft: '0.7rem'
+            paddingLeft: '0.7rem',
+            // gridArea: 'crumbs',
+            maxWidth: '100%',
         }}>
             <Breadcrumbs aria-label="breadcrumb">
                 <p>Workspace</p>
@@ -92,25 +106,38 @@ export default function CreateFormHeader() {
         </Box>
 
         {/* Tabs */}
-        <StyledTabs value={tabName} onChange={(e, name) => {onTabChange(name)}} 
+        <Box sx={{
+            gridArea: "tabs"
+        }}>
+            <StyledTabs value={tabName} onChange={(e, name) => {onTabChange(name)}} 
 
-            aria-label="secondary tabs example"
-            centered
-        >
-            <StyledTab value='create' label="Create" />
-            <StyledTab value="share" label="Share" />
-            <StyledTab value="result" label="Result" />
-        </StyledTabs>
+                aria-label="secondary tabs example"
+                centered
+            >
+                <StyledTab value='create' label="Create" />
+                <StyledTab value="share" label="Share" />
+                <StyledTab value="result" label="Result" />
+                </StyledTabs>
+        </Box>
 
         {/* Control */}
         <Box sx={{
-            width: '100%',
-            height: '100%',
             display: 'flex',
-            flexDirection: 'row-reverse',
-            justifyContent: 'space-evenly'
+            flexDirection: 'row',
+            justifyContent: 'space-evenly',
+            gridArea: "control",
+            paddingRight: "4ch"
         }}>
-            <StyledButton color='success' variant="contained">Publish</StyledButton>
+            {/* <AccessSelector access={access} onChange={onAccessChange} /> */}
+
+            <Button variant='contained' disableElevation
+                style={{
+                    backgroundColor: colors.primary,
+                    marginBottom: '1ch'
+                }}
+                onClick={onPublishClick}
+
+            >Publish</Button>
         </Box>
 
     </Box>
