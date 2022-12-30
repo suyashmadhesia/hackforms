@@ -4,7 +4,8 @@ const ethers = require('ethers');
 const fs = require('fs-extra');
 const dotenv = require('dotenv');
 
-dotenv.config();
+dotenv.config()
+// dotenv.config({path: './.env.local'});
 
 const provider = new ethers.providers.JsonRpcProvider({
     url: process.env.COINBASE_RPC_URL,
