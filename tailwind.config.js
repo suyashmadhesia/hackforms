@@ -7,12 +7,14 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        raleway: ['Raleway', 'sans-serif']
+        raleway: ['Raleway', 'sans-serif'],
+        inter: ['Inter', 'sans-serif'],
+        lato: ['Lato', 'sans-serif'],
       },
       colors: {
         purple: "#737DD9",
-        grey:"#bbbbbb",
-        primary:"#11183D"
+        grey: "#7D7D7D",
+        primary: "#11183D"
       }
     },
   },
