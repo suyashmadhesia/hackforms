@@ -9,12 +9,12 @@ import React from 'react';
 
 interface QuestionBarProp  {
     type: QuestionTypesEnum,
-    key: number,
+    index: number,
     onClick: (type: QuestionTypesEnum, index: number) => void
 }
 
 
-function titleIconWrapper(child: React.ReactNode, color: string) {
+export function titleIconWrapper(child: React.ReactNode, color: string) {
     return <Box sx={{
         backgroundColor: color,
         padding: '1ch',
@@ -24,7 +24,7 @@ function titleIconWrapper(child: React.ReactNode, color: string) {
     </Box>
 }
 
-function getTitleIcon(type: QuestionTypesEnum, ) {
+export function getTitleIcon(type: QuestionTypesEnum, ) {
     switch(type) {
         case QuestionTypesEnum.MCQ:
             return <MdDone color='black' />;
@@ -45,7 +45,7 @@ export default function QuestionBar(props: QuestionBarProp) {
     
     const data = QuestionTypesData[props.type];
     
-    return <ListItemButton key={props.key} onClick={() => {props.onClick(props.type, props.key)}}>
+    return <ListItemButton key={props.index} onClick={() => {props.onClick(props.type, props.index)}}>
         <Box sx={{
         width: '100%',
         padding: '0.3rem'

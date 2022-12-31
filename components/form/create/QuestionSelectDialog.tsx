@@ -20,7 +20,7 @@ export default function QuestionSelectDialog(props: QuestionSelectDialogProp) {
 
     const getQuestionBars = () => {
         return Object.keys(QuestionTypesData).map((value, index) => {
-            return <QuestionBar type={value as QuestionTypesEnum} key={index} onClick={onQuestionSelect} />;
+            return <QuestionBar type={value as QuestionTypesEnum} index={index} key={index} onClick={onQuestionSelect} />;
         })
     }
 

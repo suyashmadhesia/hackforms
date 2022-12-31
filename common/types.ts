@@ -22,13 +22,21 @@ export interface QuestionParams {
     requiredErrorText?: string;
     defaultValue?: string;
     placeholder?: string;
-
+  
 }
 
 export interface Question {
-    qid: number;
+    qid?: string;
+    index?: number;
     type: string;
     title: string;
-    params: Record<string, any>;
+    description?: string;
+    
     choices: string[];
+}
+
+export interface Page {
+    pageId: number;
+    questions: Question[];
+    params: Record<string, any>;
 }
