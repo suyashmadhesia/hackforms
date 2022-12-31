@@ -78,7 +78,7 @@ export default function CreateFormHeader() {
         height: '100%',
         width: '100%',
         gridTemplateAreas: `"crumbs tabs tabs tabs tabs control"`,
-        padding: '0.5rem',
+        padding: '0.4rem',
         maxWidth: '100%'
     }}>
 

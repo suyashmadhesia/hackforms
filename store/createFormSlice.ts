@@ -6,12 +6,14 @@ export interface CreateFormState {
     title: string
     tabName: string
     access: string
+    openQuestionSelectionDialog: boolean
 }
 
 const initialState: CreateFormState = {
     title: 'Untitled',
     tabName: 'create',
-    access: 'private'
+    access: 'private',
+    openQuestionSelectionDialog: false
 }
 
 export const createFormSlice = createSlice({
@@ -29,6 +31,9 @@ export const createFormSlice = createSlice({
         },
         setAccess(state, action: PayloadAction<string>) {
             state.access = action.payload;
+        },
+        setOpenQuestionSelectDialogState(state, action: PayloadAction<boolean>) {
+            state.openQuestionSelectionDialog = action.payload;
         }
     },
     extraReducers: {

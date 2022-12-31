@@ -10,11 +10,12 @@ export default function CreateForm() {
             overflow: 'hidden',
             backgroundColor: 'white',
             display: 'grid',
-            gridTemplateRows: '10% 90%',
+            gridTemplateRows: '10vh 90vh',
             gridTemplateAreas: `
             "header header header header header header"
             "question-list hero hero hero hero settings"
-            `
+            `,
+            gridTemplateColumns: '17vw 66vw 17vw'
         }}>
 
             {/* Header Component */}
