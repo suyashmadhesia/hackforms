@@ -1,7 +1,7 @@
 import { Box, ButtonGroup, IconButton, ListItem, Stack, Typography} from '@mui/material';
 import {MdDelete, MdKeyboardArrowUp, MdKeyboardArrowDown} from 'react-icons/md';
 import { useAppSelector } from '../../../store/hooks';
-import { createFormActions, createFormGetters } from '../../../store/createFormSlice';
+import { formActions, formGetters } from '../../../store/formSlice';
 import { useDispatch } from 'react-redux';
 import {titleIconWrapper, getTitleIcon} from './QuestionBar'
 import { QuestionTypesEnum } from '../../../common/question';
@@ -13,23 +13,23 @@ interface PageBarProps {
 }
 
 export default function PageBar(props: PageBarProps) { 
-    const getter = useAppSelector(state => createFormGetters(state.createForm));
+    const getter = useAppSelector(state => formGetters(state.form));
     const dispatch = useDispatch();
     const page = props.page;
 
     const moveUp = () => {
         if (page.pageId > 1) {
-            dispatch(createFormActions.swapPages([page.pageId -1, page.pageId]));
+            dispatch(formActions.swapPages([page.pageId -1, page.pageId]));
         }
     }
     const moveDown = () => {
         if (page.pageId != getter.getPageCount()) {
-            dispatch(createFormActions.swapPages([page.pageId, page.pageId + 1]));
+            dispatch(formActions.swapPages([page.pageId, page.pageId + 1]));
         }
     }
 
     const remove = () => {
-        dispatch(createFormActions.removePageAtIndex(page.pageId));
+        dispatch(formActions.removePageAtIndex(page.pageId));
     }
 
     const questionTypeData = getter.getPageQuestionTypeData(page.pageId);
@@ -38,7 +38,7 @@ export default function PageBar(props: PageBarProps) {
     const buttonGroupColor = (getter.getCurrentPageIndex() !== page.pageId) ? colors.tertiary: colors.main;
 
     const onClick = () => {
-        dispatch(createFormActions.setCurrentPageIndex(page.pageId));
+        dispatch(formActions.setCurrentPageIndex(page.pageId));
     }
 
     return <ListItem onClick={() => {onClick()}} sx={{

@@ -1,5 +1,6 @@
 import Box from '@mui/material/Box';
 import {CreateFormHeader, CreateFormHero, CreateFormQuestionList, CreateFormSettings} from '../../components/form/create';
+import { colors } from '../../styles/theme';
 
 
 export default function CreateForm() {
@@ -11,11 +12,12 @@ export default function CreateForm() {
             backgroundColor: 'white',
             display: 'grid',
             gridTemplateRows: '10vh 90vh',
+            gridTemplateColumns: '17vw 63vw 20vw',
             gridTemplateAreas: `
-            "header header header header header header"
-            "question-list hero hero hero hero settings"
+            "header header  header"
+            "question-list hero  settings"
             `,
-            gridTemplateColumns: '17vw 66vw 17vw'
+            
         }}>
 
             {/* Header Component */}
@@ -24,11 +26,13 @@ export default function CreateForm() {
             }}>
                 <CreateFormHeader />
             </Box>
+            
             {/* question-list Component */}
             <Box component="div" sx={{
                 gridArea: "question-list",
                 borderTop: '1px solid #E2E3E2',
-                borderRight: '1px solid #E2E3E2'
+                borderRight: '1px solid #E2E3E2',
+                
             }}>
                 <CreateFormQuestionList />
             </Box>
@@ -36,12 +40,14 @@ export default function CreateForm() {
             <Box component="div" sx={{
                 gridArea: "hero",
                 borderTop: '1px solid #E2E3E2',
+                backgroundColor: colors.tertiary
             }}>
                 <CreateFormHero />
             </Box>
             {/* Settings Component */}
             <Box component="div" sx={{
                 gridArea: "settings",
+                width: '20vw',
                 borderTop: '1px solid #E2E3E2',
                 borderLeft: '1px solid #E2E3E2'
             }}>

@@ -3,7 +3,7 @@ import Box from '@mui/material/Box';
 import { MdAdd } from "react-icons/md";
 import IconButton from '@mui/material/IconButton';
 import { useDispatch } from 'react-redux';
-import { createFormActions } from '../../../store/createFormSlice';
+import { formActions } from '../../../store/formSlice';
 import QuestionSelectDialog from './QuestionSelectDialog';
 import { useAppSelector } from '../../../store/hooks';
 import { QuestionTypesEnum } from '../../../common/question';
@@ -12,8 +12,8 @@ import PageBar from './PageBar';
 
 export default function CreateFormQuestionList() {
 
-    const [isDialogOpen, pages]  = useAppSelector(state => [state.createForm.openQuestionSelectionDialog, 
-        state.createForm.pages]);
+    const [isDialogOpen, pages]  = useAppSelector(state => [state.form.openQuestionSelectionDialog, 
+        state.form.pages]);
     const dispatch = useDispatch();
 
     const onAddQuestionClick = () => {
@@ -21,12 +21,12 @@ export default function CreateFormQuestionList() {
     }
 
     const openQuestionSelectDialog = () => {
-        dispatch(createFormActions.setOpenQuestionSelectDialogState(true));
+        dispatch(formActions.setOpenQuestionSelectDialogState(true));
     }
 
     const onQuestionTypeSelect = (type: QuestionTypesEnum, index: number) => {
         closeQuestionDialog()
-        dispatch(createFormActions.addQuestion({
+        dispatch(formActions.addQuestion({
             question: {
                 type: type,
                 title: 'Write the question here.',
@@ -37,7 +37,7 @@ export default function CreateFormQuestionList() {
     }
 
     const closeQuestionDialog = () => {
-        dispatch(createFormActions.setOpenQuestionSelectDialogState(false));
+        dispatch(formActions.setOpenQuestionSelectDialogState(false));
     }
 
     return <Box sx={{

@@ -1,25 +1,38 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import { HYDRATE } from "next-redux-wrapper";
-import {  Page, Question } from "../common/types";
-import { IndexInfo } from "typescript";
+import {  FormIntro, FormOutro, FormParams, FormTheme, Page, Question } from "../common/types";
 import { QuestionTypesData, QuestionTypesEnum } from "../common/question";
 
-export interface CreateFormState {
-    title: string
+
+
+export interface FormState {
     tabName: string
     access: string
     openQuestionSelectionDialog: boolean;
     pages: Page[]
     currentPageIndex: number;
+    formTheme?: FormTheme;
+    formIntro: FormIntro;
+    formOutro: FormOutro;
+    formParams: FormParams;
 }
 
-const initialState: CreateFormState = {
-    title: 'Untitled',
+const initialState: FormState = {
     tabName: 'create',
     access: 'private',
     openQuestionSelectionDialog: false,
     pages: [],
-    currentPageIndex: 1
+    currentPageIndex: 1,
+    formIntro : {
+        title: 'Untitled',
+    },
+    formOutro: {
+        title: 'Thanks You!'
+    },
+    formParams: {
+        startDate: Date.now(),
+        isClosed: false
+    }
 }
 
 
@@ -37,15 +50,12 @@ function _removePageAtIndex(pages: Page[], index: number) {
     });
 }
 
-export const createFormSlice = createSlice({
-    name: 'createForm',
+export const formSlice = createSlice({
+    name: 'form',
     initialState,
     reducers: {
-        reset(state, action){
-            state = initialState;
-        },
         setTitle(state, action: PayloadAction<string>) {
-            state.title = action.payload;
+            state.formIntro.title = action.payload;
         },
         setTabIndex(state, action: PayloadAction<string>) {
             state.tabName = action.payload;
@@ -63,7 +73,7 @@ export const createFormSlice = createSlice({
                 params: {}
             }
             if (action.payload.index !== undefined) {
-                page = createFormGetters(state).getPage(action.payload.index);
+                page = formGetters(state).getPage(action.payload.index);
             }
             const ques = action.payload.question;
             ques.qid = page.pageId.toString();
@@ -83,7 +93,7 @@ export const createFormSlice = createSlice({
             // The method to be overlooked
             // This method is created to accompany future implementation
             // Which can support multiple question in single page
-            const getter = createFormGetters(state);
+            const getter = formGetters(state);
             const page = getter.getPage(action.payload);
             const quesIndex = getter.getQuestionIndex(action.payload);
             page.questions = page.questions.filter((ques, index) => index !== quesIndex);
@@ -98,14 +108,14 @@ export const createFormSlice = createSlice({
             state.pages = _removePageAtIndex(state.pages, action.payload);
         },
         updateQuestionAtIndex(state, action: PayloadAction<{question: Question, index: string}>) {
-            const getter = createFormGetters(state);
+            const getter = formGetters(state);
             const page = getter.getPage(action.payload.index);
 
             page.questions[action.payload.question.index as number] = action.payload.question;
             state.pages[page.pageId - 1] = page;
         },
         swapPages(state, action: PayloadAction<[number, number]>) {
-            const getter = createFormGetters(state);
+            const getter = formGetters(state);
             const p1 = getter.getPage(action.payload[0].toString());
             const p2 = getter.getPage(action.payload[1].toString());
             p2.pageId = action.payload[0];
@@ -122,17 +132,17 @@ export const createFormSlice = createSlice({
         [HYDRATE]: (state, action) => {
             return {
                 ...state,
-                ...action.payload.createForm
+                ...action.payload.form
             }
         }
     }
 });
 
 
-export const createFormActions = createFormSlice.actions;
+export const formActions = formSlice.actions;
 
 
-export const createFormGetters = (state: CreateFormState) => ({
+export const formGetters = (state: FormState) => ({
     getQuestionIndex(index: string) {
         const indexes = parseQuestionIndex(index);
         if (indexes.length === 2) return indexes[1] - 1;
@@ -165,4 +175,4 @@ export const createFormGetters = (state: CreateFormState) => ({
     
 });
 
-export default createFormSlice.reducer;
+export default formSlice.reducer;

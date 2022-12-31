@@ -10,12 +10,11 @@ import Button from '@mui/material/Button';
 
 
 import { useAppSelector } from '../../../store/hooks';
-import {createFormActions} from '../../../store/createFormSlice';
+import {formActions} from '../../../store/formSlice';
 import {  styled } from '@mui/material';
 import {colors} from '../../../styles/theme';
-import AccessSelector from '../AccessSelector';
 
-const StyledTabs = styled((props: TabsProps) => (
+export const StyledTabs = styled((props: TabsProps) => (
     <Tabs 
         {...props}
         TabIndicatorProps={{ children: <span className="MuiTabs-indicatorSpan" /> }}
@@ -32,8 +31,8 @@ const StyledTabs = styled((props: TabsProps) => (
       },
 });
 
-const StyledTab = styled((props: TabProps) => (
-    <Tab disableRipple {...props} />
+export const StyledTab = styled((props: TabProps) => (
+    <Tab  {...props} />
   ))(({ theme }) => ({
     textTransform: 'none',
     fontWeight: theme.typography.fontWeightBold,
@@ -50,23 +49,24 @@ const StyledTab = styled((props: TabProps) => (
 
 
 
-export default function CreateFormHeader() {
+export default function formHeader() {
 
-    const [title, tabName, access] = useAppSelector(state => [state.createForm.title, 
-        state.createForm.tabName,
-        state.createForm.access
+    const [title, tabName, access] = useAppSelector(state => [state.form.title, 
+        state.form.tabName,
+        state.form.access
     ]);
 
     const dispatch = useDispatch();
 
     const onTitleValueInput = (value: string) => {
-        dispatch(createFormActions.setTitle(value))
+        dispatch(formActions.setTitle(value))
     }
 
     const onTabChange = (name: string) => {
-        dispatch(createFormActions.setTabIndex(name));
+        dispatch(formActions.setTabIndex(name));
     }
 
+    //TODO: Implement access change
     const onAccessChange = (val: string) => {
 
     }
@@ -109,7 +109,8 @@ export default function CreateFormHeader() {
         <Box sx={{
             gridArea: "tabs"
         }}>
-            <StyledTabs value={tabName} onChange={(e, name) => {onTabChange(name)}} 
+            <StyledTabs value={tabName} 
+            onChange={(e, name) => {onTabChange(name)}} 
 
                 aria-label="secondary tabs example"
                 centered

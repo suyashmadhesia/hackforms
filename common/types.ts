@@ -40,3 +40,28 @@ export interface Page {
     questions: Question[];
     params: Record<string, any>;
 }
+
+export interface FormTheme {
+    questionTextColor: string;
+    answerTextColor: string;
+    buttonBgColor: string;
+    buttonTextColor: string;
+    backgroundColor: string;
+    backgroundImage?: string;
+    opacity?:number;
+    icon?: string
+}
+
+export interface FormIntro {
+    banner?: string;
+    title: string;
+    description?: string;
+}
+
+export type FormOutro = FormIntro;
+
+export interface FormParams {
+    startDate: number;
+    endDate?: number;
+    isClosed: boolean;
+}

@@ -1,11 +1,11 @@
 import { configureStore, ThunkAction, Action } from "@reduxjs/toolkit";
 import { createWrapper } from "next-redux-wrapper";
-import {createFormSlice} from "./createFormSlice";
+import {formSlice} from "./formSlice";
 
 const makeStore = () =>
   configureStore({
     reducer: {
-      [createFormSlice.name]: createFormSlice.reducer
+      [formSlice.name]: formSlice.reducer
     },
     devTools: true,
   });
