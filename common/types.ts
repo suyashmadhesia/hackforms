@@ -13,6 +13,7 @@ export interface QuestionControlType {
 export interface QuestionType {
     type: string;
     name: string;
+    color: string;
     properties: QuestionControlType[]
 }
 

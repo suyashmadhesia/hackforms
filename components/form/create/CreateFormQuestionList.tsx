@@ -6,6 +6,7 @@ import { useDispatch } from 'react-redux';
 import { createFormActions } from '../../../store/createFormSlice';
 import QuestionSelectDialog from './QuestionSelectDialog';
 import { useAppSelector } from '../../../store/hooks';
+import { QuestionTypesEnum } from '../../../common/question';
 
 
 export default function CreateFormQuestionList() {
@@ -19,6 +20,10 @@ export default function CreateFormQuestionList() {
 
     const openQuestionSelectDialog = () => {
         dispatch(createFormActions.setOpenQuestionSelectDialogState(true));
+    }
+
+    const onQuestionTypeSelect = (type: QuestionTypesEnum, index: number) => {
+        closeQuestionDialog()
     }
 
     const closeQuestionDialog = () => {
@@ -49,6 +54,8 @@ export default function CreateFormQuestionList() {
                 <MdAdd />    
             </IconButton>
         </Box>
-        <QuestionSelectDialog open={isDialogOpen} onClose={closeQuestionDialog} />
+        <QuestionSelectDialog open={isDialogOpen} 
+            onSelect={onQuestionTypeSelect} 
+            onClose={closeQuestionDialog} />
     </Box>;
 }
