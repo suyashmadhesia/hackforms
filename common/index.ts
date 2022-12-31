@@ -12,5 +12,5 @@ export function getEditableFormStateFromStorage() {
 }
 
 export function setEditableFormStateFromStorage(formState: FormState) {
-    window.localStorage.setItem(EDITABLE_FORM_STATE, JSON.stringify(formState))
+    // window.localStorage.setItem(EDITABLE_FORM_STATE, JSON.stringify(formState))
 }

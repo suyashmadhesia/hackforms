@@ -3,6 +3,8 @@ import {CreateFormHeader, CreateFormHero, CreateFormQuestionList, CreateFormSett
 import { colors } from '../../styles/theme';
 import { useDispatch } from 'react-redux';
 import { formActions } from '../../store/formSlice';
+import { useState } from 'react';
+import PasswordInputDialog from '../../components/common/PasswordInputDialog';
 
 
 export default function CreateForm() {
@@ -31,7 +33,6 @@ export default function CreateForm() {
             `,
             
         }}>
-
             {/* Header Component */}
             <Box component="div" sx={{
                 gridArea: "header",
