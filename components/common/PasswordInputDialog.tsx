@@ -53,7 +53,7 @@ export default function PasswordInputDialog(props: PasswordInputDialogProps) {
                 }}
                 onClick={() => {onContinueClick()}}
 
-            >Publish</Button>
+            >Continue</Button>
 
         </Box>
         </DialogContent>

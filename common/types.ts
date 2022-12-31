@@ -7,6 +7,7 @@ export const QuestionControlInputType = {
 export interface QuestionControlType {
     [propsName: string]: {
         inputType: string;
+        defaultValue: any
     }
 }
 
@@ -61,8 +62,8 @@ export interface FormIntro {
 export type FormOutro = FormIntro;
 
 export interface FormParams {
-    startDate: number;
-    endDate?: number;
+    startDate?: string;
+    endDate?: string;
     isClosed: boolean;
     isPayable: boolean;
     rate?: number;

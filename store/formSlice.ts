@@ -26,7 +26,7 @@ const initialState: FormState = {
     access: 'private',
     isEditable: false,
     openQuestionSelectionDialog: false,
-    openConfirmationDialog: false,
+    openConfirmationDialog: true,
     pages: [],
     currentPageIndex: 1,
     formIntro : {
@@ -36,7 +36,6 @@ const initialState: FormState = {
         title: 'Thanks You!'
     },
     formParams: {
-        startDate: Date.now(),
         isClosed: false,
         isPayable: false
     }
@@ -66,6 +65,27 @@ export const formSlice = createSlice({
 
             // Storing the form state
             setEditableFormStateFromStorage(state);
+        },
+        setIntroDescription(state, action: PayloadAction<string>){
+            state.formIntro.description = action.payload;
+        },
+        setStartDate(state, action: PayloadAction<string>){
+            state.formParams.startDate = action.payload;
+        },
+        setEndDate(state, action: PayloadAction<string>){
+            state.formParams.endDate = action.payload;
+        },
+        setIsClosed(state, action: PayloadAction<boolean>){
+            state.formParams.isClosed = action.payload;
+        },
+        setIsPayable(state, action: PayloadAction<boolean>){
+            state.formParams.isClosed = action.payload;
+        },
+        setRate(state, action: PayloadAction<number>){
+            state.formParams.rate = action.payload < 0 ? 0: action.payload;
+        },
+        setNumberOfResponse(state, action: PayloadAction<number>){
+            state.formParams.maxNumberOfResponse = action.payload < 0 ? 0: action.payload;
         },
         setFormInitialState(state, action: PayloadAction<FormState>) {
             state = Object.assign({}, initialState, action.payload);
