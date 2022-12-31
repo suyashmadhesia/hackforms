@@ -64,4 +64,7 @@ export interface FormParams {
     startDate: number;
     endDate?: number;
     isClosed: boolean;
+    isPayable: boolean;
+    rate?: number;
+    maxNumberOfResponse?: number;
 }

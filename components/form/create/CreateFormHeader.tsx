@@ -13,6 +13,7 @@ import { useAppSelector } from '../../../store/hooks';
 import {formActions} from '../../../store/formSlice';
 import {  styled } from '@mui/material';
 import {colors} from '../../../styles/theme';
+import ConfirmationDialog from './ConfirmationDialog';
 
 export const StyledTabs = styled((props: TabsProps) => (
     <Tabs 
@@ -49,9 +50,9 @@ export const StyledTab = styled((props: TabProps) => (
 
 
 
-export default function formHeader() {
+export default function FormHeader() {
 
-    const [title, tabName, access] = useAppSelector(state => [state.form.title, 
+    const [title, tabName, access] = useAppSelector(state => [state.form.formIntro.title, 
         state.form.tabName,
         state.form.access
     ]);
@@ -66,12 +67,10 @@ export default function formHeader() {
         dispatch(formActions.setTabIndex(name));
     }
 
-    //TODO: Implement access change
-    const onAccessChange = (val: string) => {
 
+    const onPublishClick = () => {
+        dispatch(formActions.setOpenConfirmationDialogState(true));
     }
-
-    const onPublishClick = () => {}
 
     return <Box component="div" sx={{
         display: 'grid',
@@ -120,6 +119,8 @@ export default function formHeader() {
                 <StyledTab value="result" label="Result" />
                 </StyledTabs>
         </Box>
+        {/** Confirmation Dialog */}
+        <ConfirmationDialog />
 
         {/* Control */}
         <Box sx={{
@@ -136,7 +137,7 @@ export default function formHeader() {
                     backgroundColor: colors.primary,
                     marginBottom: '1ch'
                 }}
-                onClick={onPublishClick}
+                onClick={() => {onPublishClick()}}
 
             >Publish</Button>
         </Box>

@@ -1,9 +1,21 @@
 import Box from '@mui/material/Box';
 import {CreateFormHeader, CreateFormHero, CreateFormQuestionList, CreateFormSettings} from '../../components/form/create';
 import { colors } from '../../styles/theme';
+import { useDispatch } from 'react-redux';
+import { formActions } from '../../store/formSlice';
 
 
 export default function CreateForm() {
+
+    const dispatch = useDispatch()
+    //TODO: Add persistancy
+    // const formState = getEditableFormStateFromStorage()
+    // if (formState !== null){
+    //     dispatch(formActions.setFormInitialState(formState));
+    // }
+    dispatch(formActions.setEditableState(true));
+
+
     return (
         <Box component="div" sx={{
             width: '100vw',

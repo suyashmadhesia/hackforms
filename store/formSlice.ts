@@ -2,25 +2,31 @@ import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import { HYDRATE } from "next-redux-wrapper";
 import {  FormIntro, FormOutro, FormParams, FormTheme, Page, Question } from "../common/types";
 import { QuestionTypesData, QuestionTypesEnum } from "../common/question";
+import { setEditableFormStateFromStorage } from "../common";
 
 
 
 export interface FormState {
     tabName: string
     access: string
+    isEditable: boolean;
     openQuestionSelectionDialog: boolean;
+    openConfirmationDialog: boolean;
     pages: Page[]
     currentPageIndex: number;
     formTheme?: FormTheme;
     formIntro: FormIntro;
     formOutro: FormOutro;
     formParams: FormParams;
+    encKey?: string;
 }
 
 const initialState: FormState = {
     tabName: 'create',
     access: 'private',
+    isEditable: false,
     openQuestionSelectionDialog: false,
+    openConfirmationDialog: false,
     pages: [],
     currentPageIndex: 1,
     formIntro : {
@@ -31,7 +37,8 @@ const initialState: FormState = {
     },
     formParams: {
         startDate: Date.now(),
-        isClosed: false
+        isClosed: false,
+        isPayable: false
     }
 }
 
@@ -54,17 +61,39 @@ export const formSlice = createSlice({
     name: 'form',
     initialState,
     reducers: {
+        setEditableState(state, action: PayloadAction<boolean>){
+            state.isEditable = action.payload;
+
+            // Storing the form state
+            setEditableFormStateFromStorage(state);
+        },
+        setFormInitialState(state, action: PayloadAction<FormState>) {
+            state = Object.assign({}, initialState, action.payload);
+        },
         setTitle(state, action: PayloadAction<string>) {
             state.formIntro.title = action.payload;
+            // Storing the form state
+            setEditableFormStateFromStorage(state);
         },
         setTabIndex(state, action: PayloadAction<string>) {
             state.tabName = action.payload;
+            // Storing the form state
+            setEditableFormStateFromStorage(state);
         },
         setAccess(state, action: PayloadAction<string>) {
             state.access = action.payload;
+            // Storing the form state
+            setEditableFormStateFromStorage(state);
         },
         setOpenQuestionSelectDialogState(state, action: PayloadAction<boolean>) {
             state.openQuestionSelectionDialog = action.payload;
+            // Storing the form state
+            setEditableFormStateFromStorage(state);
+        },
+        setOpenConfirmationDialogState(state, action: PayloadAction<boolean>) {
+            state.openConfirmationDialog = action.payload;
+            // Storing the form state
+            setEditableFormStateFromStorage(state);
         },
         addQuestion(state, action: PayloadAction<{question: Question, index?: string}>) {
             let page: Page = {
@@ -87,6 +116,8 @@ export const formSlice = createSlice({
             page.questions.push(ques);
             state.pages[page.pageId - 1] = page;
             state.currentPageIndex = page.pageId;
+            // Storing the form state
+            setEditableFormStateFromStorage(state);
 
         },
         removeQuestionAtIndex(state, action: PayloadAction<string>) {
@@ -103,9 +134,13 @@ export const formSlice = createSlice({
             if (page.questions.length == 0) {
                 state.pages = _removePageAtIndex(state.pages, page.pageId);
             }
+            // Storing the form state
+            setEditableFormStateFromStorage(state);
         },
         removePageAtIndex(state, action: PayloadAction<number>){
             state.pages = _removePageAtIndex(state.pages, action.payload);
+            // Storing the form state
+            setEditableFormStateFromStorage(state);
         },
         updateQuestionAtIndex(state, action: PayloadAction<{question: Question, index: string}>) {
             const getter = formGetters(state);
@@ -113,6 +148,8 @@ export const formSlice = createSlice({
 
             page.questions[action.payload.question.index as number] = action.payload.question;
             state.pages[page.pageId - 1] = page;
+            // Storing the form state
+            setEditableFormStateFromStorage(state);
         },
         swapPages(state, action: PayloadAction<[number, number]>) {
             const getter = formGetters(state);
@@ -122,9 +159,13 @@ export const formSlice = createSlice({
             p1.pageId = action.payload[1];   
             state.pages[action.payload[0] - 1] = p2;
             state.pages[action.payload[1] - 1] = p1;
+            // Storing the form state
+            setEditableFormStateFromStorage(state);
         },
         setCurrentPageIndex(state, action: PayloadAction<number>){
             state.currentPageIndex = action.payload;
+            // Storing the form state
+            setEditableFormStateFromStorage(state);
         }
 
     },
