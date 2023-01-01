@@ -8,13 +8,13 @@ import Button from "../components/Button";
 export default function Home() {
 
   return (
-    <div className="h-screen">
+    <div className="h-screen w-screen m-auto">
       <Navbar />
-      <div className="my-10 text-5xl font-extrabold font-inter text-primary text-center">
+      <div className="my-5 text-5xl font-extrabold font-inter text-primary text-center">
         <p> Create forms, surveys, and quizzes</p>
         <p className="my-2">that people enjoy answering.</p>
       </div>
-      <div className="flex justify-center h-auto">
+      <div className="flex justify-center">
         <Image
           width={"600"}
           height={"350"}
@@ -22,7 +22,7 @@ export default function Home() {
           alt="image"
         />
       </div>
-      <div className="flex justify-center my-8">
+      <div className="flex justify-center my-4">
         <Button
           title="Get Started it's free"
           fill={true}
