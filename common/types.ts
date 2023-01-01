@@ -68,4 +68,55 @@ export interface FormParams {
     isPayable: boolean;
     rate?: number;
     maxNumberOfResponse?: number;
+    formId?: string;
+    title: string;
+    description?: string;
+    access: string;
 }
+
+
+export interface FormResponseParams {
+    formId: string;
+    responseId?: string;
+    creationDate?: string;
+    access: string;
+}
+
+export interface EncryptedData<T> {
+    header: {
+        alg: string;
+        keyEncAlg: string;
+        access: "public" | "private" | "protected"
+    },
+    payload: {
+        data: string;
+        meta: T,
+        iss: string;
+        owner: string;
+        subRecord: Record<string, string>;
+        inviteList: string[]
+    },
+    proof: {
+        hash: string;
+        signature?: string;
+    }
+}
+
+export type EncryptedForm = EncryptedData<FormParams>;
+export type EncryptedFormResponse = EncryptedData<FormResponseParams>;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,6 +1,36 @@
 import * as cryptojs from 'crypto-js';
 import EthCrypto from 'eth-crypto';
+import { getItemFromLocalStorage, storeItemInLocalStorage } from './storage';
 
+
+import { Web3Storage } from 'web3.storage'
+
+function getAccessToken () {
+  // If you're just testing, you can paste in a token
+  // and uncomment the following line:
+  // return 'paste-your-token-here'
+
+  // In a real app, it's better to read an access token from an
+  // environement variable or other configuration that's kept outside of
+  // your code base. For this to work, you need to set the
+  // WEB3STORAGE_TOKEN environment variable before you run your code.
+  return process.env.WEB3STORAGE_TOKEN
+}
+
+function makeStorageClient () {
+  return new Web3Storage({ token: getAccessToken() as string });
+}
+
+
+const KEYSTORE_NAME = 'portal_origin_address_hash'
+const VERIFIER = 'cql_origin'
+const PUBLIC_DETAILS = 'public_key_chain'
+
+
+interface PublicKeyChain {
+    pubKey: string;
+    address: string
+}
 
 export function getStringFromArrayBuffer(buffer: ArrayBuffer): string {
     return String.fromCharCode.apply(null, (new Uint8Array(buffer) as any));
@@ -76,7 +106,7 @@ export async function decryptAES(data: string, key: CryptoKey) {
 
 }
 
-export function digestSHA25(data: string) {
+export function digestSHA256(data: string) {
     return cryptojs.SHA256(data).toString(cryptojs.enc.Base64);
 }
 
@@ -84,13 +114,17 @@ export function digestMD5(data: string) {
     return cryptojs.MD5(data).toString(cryptojs.enc.Base64);
 }
 
-export function generateAESKeyFromSeed(seed: string) {
-    const shaHash = digestSHA25(seed);
+export function digestSeed(seed: string) {
+    const shaHash = digestSHA256(seed);
     return digestMD5(shaHash);
 }
 
+export async function generateAESKeyFromSeed(seed: string) {
+    return await importAESKey(digestSeed(seed));
+}
 
-export function createKeyPair(){
+
+function createKeyPair(){
     return EthCrypto.createIdentity();
 }
 
@@ -130,3 +164,71 @@ export async function decryptWithPrivateKey(privateKey: string,  cipherText: str
     const cipher = EthCrypto.cipher.parse(cipherText);
     return await EthCrypto.decryptWithPrivateKey(privateKey, cipher);
 }
+
+export async function securePrivateKey(privateKey: string, secret: string) {
+    const aesKey = await generateAESKeyFromSeed(secret);
+    return await encryptAES(privateKey, aesKey);
+}
+
+
+export function storePublicKeyData(pubKey: string, address: string) {
+    storeItemInLocalStorage(PUBLIC_DETAILS, JSON.stringify({pubKey, address}))
+}
+
+export function loadPublicKeyData() {
+    const _tmp = getItemFromLocalStorage(PUBLIC_DETAILS)
+    if (_tmp === null) {
+        throw new Error('No public key data available')
+    }
+    return JSON.parse(_tmp) as PublicKeyChain;
+}
+
+export function storePrivateKey(privKey: string, secret: string) {
+    const secretHash = digestSHA256(digestSeed(secret));
+    storeItemInLocalStorage(KEYSTORE_NAME, privKey);
+    storeItemInLocalStorage(VERIFIER, secretHash);
+}
+
+export function loadPrivateKeys(secret: string) {
+    const secretHash = digestSHA256(digestSeed(secret))
+    const verifier = getItemFromLocalStorage(VERIFIER)
+    if (verifier === null) throw new Error('No private key is available to load');
+    if (verifier !== secretHash) {
+        throw new Error('Authentication Failed.')
+    }
+    const key = getItemFromLocalStorage(KEYSTORE_NAME);
+    if (key === null) throw new Error('No private key is available to load');
+
+    return key;
+}
+
+
+export async function decryptData(data: string, secret: string) {
+    const aesKey = digestSeed(secret)
+    const encKey = loadPrivateKeys(secret);
+    const privateKey = await decryptAES(encKey, await importAESKey(aesKey));
+    return await decryptWithPrivateKey(privateKey, data);
+}
+
+
+export async function generateSecureKeyPair(secret: string) {
+    const keyPair = createKeyPair();
+    storePublicKeyData(keyPair.publicKey, keyPair.address);
+    const aesKey = await importAESKey(digestSeed(secret))
+    const encKey = await encryptAES(keyPair.privateKey, aesKey)
+    storePrivateKey(encKey, secret);
+}
+
+
+export async function retrieveFile(cid: string) {
+    const client = makeStorageClient();
+    const res = await client.get(cid);
+    if (!res?.ok) {
+        throw new Error(`failed to get ${cid}`);
+    }
+    const files = (await res.files())[0];
+    const jsonString = getStringFromArrayBuffer(await files.arrayBuffer());
+    return JSON.parse(jsonString);  
+}
+
+
