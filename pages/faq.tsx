@@ -1,5 +1,9 @@
+import ConnectWallet from "../components/ConnectWallet";
+
 export default function Faq(){
     return (
-      <div>Faq</div>
+      <div>
+        <ConnectWallet />
+      </div>
     )
   }
