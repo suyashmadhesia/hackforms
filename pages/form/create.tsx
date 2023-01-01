@@ -1,10 +1,9 @@
 import Box from '@mui/material/Box';
-import {CreateFormHeader, CreateFormHero, CreateFormQuestionList, CreateFormSettings} from '../../components/form/create';
-import { colors } from '../../styles/theme';
+import {CreateFormHeader} from '../../components/form/create';
 import { useDispatch } from 'react-redux';
 import { formActions } from '../../store/formSlice';
-import { useState } from 'react';
-import PasswordInputDialog from '../../components/common/PasswordInputDialog';
+import dynamic from 'next/dynamic';
+
 
 
 export default function CreateForm() {
@@ -17,6 +16,11 @@ export default function CreateForm() {
     // }
     dispatch(formActions.setEditableState(true));
 
+    const SurveyCreatorWidget = dynamic(
+        () => import('../../components/form/create/SurveyCreatorWidget'),
+        {ssr: false}
+    )
+
 
     return (
         <Box component="div" sx={{
@@ -26,11 +30,12 @@ export default function CreateForm() {
             backgroundColor: 'white',
             display: 'grid',
             gridTemplateRows: '10vh 90vh',
-            gridTemplateColumns: '17vw 63vw 20vw',
-            gridTemplateAreas: `
-            "header header  header"
-            "question-list hero  settings"
-            `,
+            gridTemplateAreas: `"header" "content"`
+            // gridTemplateColumns: '17vw 63vw 20vw',
+            // gridTemplateAreas: `
+            // "header header  header"
+            // "question-list hero  settings"
+            // `,
             
         }}>
             {/* Header Component */}
@@ -39,8 +44,15 @@ export default function CreateForm() {
             }}>
                 <CreateFormHeader />
             </Box>
+
+            <Box sx={{
+                gridArea: 'content',
+                overflow: 'scroll'
+            }}>
+                <SurveyCreatorWidget />
+            </Box>
             
-            {/* question-list Component */}
+            {/* question-list Component
             <Box component="div" sx={{
                 gridArea: "question-list",
                 borderTop: '1px solid #E2E3E2',
@@ -48,16 +60,16 @@ export default function CreateForm() {
                 
             }}>
                 <CreateFormQuestionList />
-            </Box>
-            {/* Hero Component */}
+            </Box> */}
+            {/* Hero Component
             <Box component="div" sx={{
                 gridArea: "hero",
                 borderTop: '1px solid #E2E3E2',
                 backgroundColor: colors.tertiary
             }}>
                 <CreateFormHero />
-            </Box>
-            {/* Settings Component */}
+            </Box> */}
+            {/* Settings Component
             <Box component="div" sx={{
                 gridArea: "settings",
                 width: '20vw',
@@ -65,7 +77,7 @@ export default function CreateForm() {
                 borderLeft: '1px solid #E2E3E2'
             }}>
                 <CreateFormSettings />
-            </Box>
+            </Box> */}
 
 
         </Box>
