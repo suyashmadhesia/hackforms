@@ -4,6 +4,7 @@ import { getItemFromLocalStorage, storeItemInLocalStorage } from './storage';
 
 
 import { Web3Storage } from 'web3.storage'
+import { EncryptedData } from './types';
 
 function getAccessToken () {
   // If you're just testing, you can paste in a token
@@ -220,7 +221,7 @@ export async function generateSecureKeyPair(secret: string) {
 }
 
 
-export async function retrieveFile(cid: string) {
+export async function retrieveFile<T=any>(cid: string) {
     const client = makeStorageClient();
     const res = await client.get(cid);
     if (!res?.ok) {
@@ -228,7 +229,7 @@ export async function retrieveFile(cid: string) {
     }
     const files = (await res.files())[0];
     const jsonString = getStringFromArrayBuffer(await files.arrayBuffer());
-    return JSON.parse(jsonString);  
+    return JSON.parse(jsonString) as EncryptedData<T>;  
 }
 
 
