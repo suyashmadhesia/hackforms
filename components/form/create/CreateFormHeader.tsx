@@ -52,7 +52,7 @@ export const StyledTab = styled((props: TabProps) => (
 
 export default function FormHeader() {
 
-    const [title, tabName, access] = useAppSelector(state => [state.form.formIntro.title, 
+    const [title, tabName, access] = useAppSelector(state => [state.form.form.title, 
         state.form.tabName,
         state.form.access
     ]);
@@ -92,15 +92,6 @@ export default function FormHeader() {
         }}>
             <Breadcrumbs aria-label="breadcrumb">
                 <p>Workspace</p>
-                <TextField
-                    id="create-form-title"
-                    variant='standard'
-                    value={title}
-                    onChange={(event) => {onTitleValueInput(event.target.value)}}
-                    InputProps={{
-                        disableUnderline: true,
-                    }}
-                ></TextField>
             </Breadcrumbs>
         </Box>
 
@@ -120,7 +111,7 @@ export default function FormHeader() {
                 </StyledTabs>
         </Box>
         {/** Confirmation Dialog */}
-        <ConfirmationDialog />
+        {/* <ConfirmationDialog /> */}
 
         {/* Control */}
         <Box sx={{

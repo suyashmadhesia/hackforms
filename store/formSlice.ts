@@ -1,9 +1,11 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import { HYDRATE } from "next-redux-wrapper";
-import {  FormIntro, FormOutro, FormParams, FormTheme, Page, Question } from "../common/types";
+import {  FormParams, FormTheme, Page, Question } from "../common/types";
 import { QuestionTypesData, QuestionTypesEnum } from "../common/question";
 import { setEditableFormStateFromStorage } from "../common";
 
+
+export type Form = {title?: string, description?: string, logo?: string} & Record<string ,any>
 
 
 export interface FormState {
@@ -15,10 +17,9 @@ export interface FormState {
     pages: Page[]
     currentPageIndex: number;
     formTheme?: FormTheme;
-    formIntro: FormIntro;
-    formOutro: FormOutro;
-    formParams: FormParams;
+    formParams: Partial<FormParams>;
     encKey?: string;
+    form: Form;
 }
 
 const initialState: FormState = {
@@ -29,15 +30,13 @@ const initialState: FormState = {
     openConfirmationDialog: true,
     pages: [],
     currentPageIndex: 1,
-    formIntro : {
-        title: 'Untitled',
-    },
-    formOutro: {
-        title: 'Thanks You!'
-    },
     formParams: {
         isClosed: false,
-        isPayable: false
+        isPayable: false,
+        access: 'private'
+    },
+    form: {
+        title: 'Untitled'
     }
 }
 
@@ -60,6 +59,14 @@ export const formSlice = createSlice({
     name: 'form',
     initialState,
     reducers: {
+        setForm(state, action: PayloadAction<Form>) {
+            // state.form = Object.assign({}, action.payload)
+        },
+
+        setTitle(state, action: PayloadAction<string>){
+            state.form.title = action.payload;
+        },
+
         setEditableState(state, action: PayloadAction<boolean>){
             state.isEditable = action.payload;
 
@@ -67,7 +74,7 @@ export const formSlice = createSlice({
             setEditableFormStateFromStorage(state);
         },
         setIntroDescription(state, action: PayloadAction<string>){
-            state.formIntro.description = action.payload;
+            state.form.description = action.payload;
         },
         setStartDate(state, action: PayloadAction<string>){
             state.formParams.startDate = action.payload;
@@ -90,11 +97,11 @@ export const formSlice = createSlice({
         setFormInitialState(state, action: PayloadAction<FormState>) {
             state = Object.assign({}, initialState, action.payload);
         },
-        setTitle(state, action: PayloadAction<string>) {
-            state.formIntro.title = action.payload;
-            // Storing the form state
-            setEditableFormStateFromStorage(state);
-        },
+        // setTitle(state, action: PayloadAction<string>) {
+        //     state.formIntro.title = action.payload;
+        //     // Storing the form state
+        //     setEditableFormStateFromStorage(state);
+        // },
         setTabIndex(state, action: PayloadAction<string>) {
             state.tabName = action.payload;
             // Storing the form state

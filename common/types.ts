@@ -72,6 +72,7 @@ export interface FormParams {
     title: string;
     description?: string;
     access: string;
+    banner?: string;
 }
 
 
