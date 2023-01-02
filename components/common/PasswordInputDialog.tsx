@@ -3,6 +3,7 @@ import { Box } from "@mui/system";
 import {MdOutlineVpnKey} from 'react-icons/md'
 import { colors } from "../../styles/theme";
 import { useState } from "react";
+import { digestSeed } from "../../common/security";
 
 interface PasswordInputDialogProps {
     open: boolean;
@@ -13,15 +14,17 @@ interface PasswordInputDialogProps {
 
 export default function PasswordInputDialog(props: PasswordInputDialogProps) {
     
-    const [secret, setSecret] = useState<string>();
+    const [secret, setSecret] = useState<string>('');
     const changeHandler = (value: string) => {
         setSecret(value);
     }
     const onContinueClick = () => {
         // TODO: Password based decryption 
         // Ad feature to calculate the key out of password
-        const key = secret;
-        props.onSecretInput(key as string);
+        if (secret === undefined || secret.length < 4){
+            return;
+        }
+        props.onSecretInput(digestSeed(secret as string));
         props.onClose()
     }
 

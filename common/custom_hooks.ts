@@ -3,7 +3,7 @@ import { loginUser } from "./api";
 import { isAuthCodeExists } from "./storage";
 
 
-export function useGeLoginStatus() {
+export function useGetLoginStatus() {
     const [userLoggedIn, setUserLoggedIn] = useState(false);
 
     useEffect(() => {

@@ -1,6 +1,6 @@
 import * as cryptojs from 'crypto-js';
 import EthCrypto from 'eth-crypto';
-import { getItemFromLocalStorage, storeItemInLocalStorage } from './storage';
+import { getItemFromLocalStorage, removeItemFromLocalStorage, storeItemInLocalStorage } from './storage';
 
 
 import { Web3Storage } from 'web3.storage'
@@ -125,7 +125,7 @@ export async function generateAESKeyFromSeed(seed: string) {
 }
 
 
-function createKeyPair(){
+export function createKeyPair(){
     return EthCrypto.createIdentity();
 }
 
@@ -184,19 +184,25 @@ export function loadPublicKeyData() {
     return JSON.parse(_tmp) as PublicKeyChain;
 }
 
-export function storePrivateKey(privKey: string, secret: string) {
-    const secretHash = digestSHA256(digestSeed(secret));
+export function storePrivateKey(privKey: string) {
+    // const secretHash = digestSHA256(digestSeed(secret));
     storeItemInLocalStorage(KEYSTORE_NAME, privKey);
-    storeItemInLocalStorage(VERIFIER, secretHash);
+    // storeItemInLocalStorage(VERIFIER, secretHash);
 }
 
-export function loadPrivateKeys(secret: string) {
-    const secretHash = digestSHA256(digestSeed(secret))
-    const verifier = getItemFromLocalStorage(VERIFIER)
-    if (verifier === null) throw new Error('No private key is available to load');
-    if (verifier !== secretHash) {
-        throw new Error('Authentication Failed.')
-    }
+export function clearKeyStore() {
+    removeItemFromLocalStorage(PUBLIC_DETAILS);
+    removeItemFromLocalStorage(KEYSTORE_NAME);
+    removeItemFromLocalStorage(VERIFIER);
+}
+
+export function loadPrivateKeys() {
+    // const secretHash = digestSHA256(digestSeed(secret))
+    // const verifier = getItemFromLocalStorage(VERIFIER)
+    // if (verifier === null) throw new Error('No private key is available to load');
+    // if (verifier !== secretHash) {
+        // throw new Error('Authentication Failed.')
+    // }
     const key = getItemFromLocalStorage(KEYSTORE_NAME);
     if (key === null) throw new Error('No private key is available to load');
 
@@ -206,7 +212,7 @@ export function loadPrivateKeys(secret: string) {
 
 export async function decryptData(data: string, secret: string) {
     const aesKey = digestSeed(secret)
-    const encKey = loadPrivateKeys(secret);
+    const encKey = loadPrivateKeys();
     const privateKey = await decryptAES(encKey, await importAESKey(aesKey));
     return await decryptWithPrivateKey(privateKey, data);
 }
@@ -217,9 +223,12 @@ export async function generateSecureKeyPair(secret: string) {
     storePublicKeyData(keyPair.publicKey, keyPair.address);
     const aesKey = await importAESKey(digestSeed(secret))
     const encKey = await encryptAES(keyPair.privateKey, aesKey)
-    storePrivateKey(encKey, secret);
+    storePrivateKey(encKey);
 }
 
+export function getAddressFromPubKey(pubKey: string) {
+    return EthCrypto.publicKey.toAddress(pubKey);
+}
 
 export async function retrieveFile<T=any>(cid: string) {
     const client = makeStorageClient();

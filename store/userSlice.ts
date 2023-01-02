@@ -6,6 +6,7 @@ import { setAuthCode } from "../common/storage";
 interface LoginResponse {
     user: UserProfile,
     token: string;
+    
 }
 
 export const fetchUserEOAExistence = createAsyncThunk(
@@ -37,7 +38,8 @@ export interface UserSliceState {
     eoaExists: boolean;
     hasError: boolean;
     error?: string;
-    user?: UserProfile
+    user?: UserProfile;
+    args?: LoginArgs
 
 }
 
@@ -51,6 +53,9 @@ export const userSlice = createSlice({
     name: 'user',
     initialState, 
     reducers: {
+        setLoginArgs(state, action: PayloadAction<LoginArgs>) {
+            state.args = Object.assign({}, action.payload)
+        },
         setError(state, action: PayloadAction<string>) {
             state.error = action.payload;
             state.hasError = true

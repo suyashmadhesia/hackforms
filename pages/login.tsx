@@ -4,12 +4,19 @@ import Image from 'next/image';
 import Web3AuthLogo from '../assets/img/web3Auth.png'
 import UDLogo from '../assets/svg/default-large.svg'
 import { colors } from "../styles/theme";
-
+import {ethers} from 'ethers';
 import {Web3Auth} from '@web3auth/modal';
 import { getPublicCompressed } from "@toruslabs/eccrypto";
 import Client from '@uauth/js'
-import { useState } from "react";
-
+import { useEffect, useState } from "react";
+import { useGetLoginStatus } from "../common/custom_hooks";
+import { useRouter } from 'next/router'
+import Loader from "../common/ProgrssBar";
+import { LoginArgs, LoginResponse } from "../common/types";
+import { fetchUserEOAExistence, loginUser } from "../common/api";
+import { getItemFromLocalStorage, removeItemFromLocalStorage, setAuthCode, storeItemInLocalStorage } from "../common/storage";
+import PasswordInputDialog from "../components/common/PasswordInputDialog";
+import { clearKeyStore, createKeyPair, encryptAES, getAddressFromPubKey, importAESKey, storePrivateKey, storePublicKeyData } from "../common/security";
 
 /**
  * 
@@ -31,7 +38,72 @@ import { useState } from "react";
 
 export default function Login() {
 
+    const LOGIN_ARGS = 'login-args'
     const [error, setError] = useState<string|null>(null);
+    const [isLoading, showLoading] = useState(false);
+    const [openPassDiag, setOpenPassDiag] = useState(false);
+    const router = useRouter();
+
+    const loginStatus = useGetLoginStatus();
+
+    useEffect(() => {
+        if (loginStatus) {
+            // TODO: add option to go back or go to dashboard
+            if (router.query.redirected !== undefined){
+                router.back()
+            }else{
+                router.replace('/dashboard')
+            }
+        }
+    },[loginStatus, router])
+
+    const onSecret = async (aesKeyStr: string) => {
+        // Close the dialog box
+        setOpenPassDiag(false)
+        // Show loading screen again
+        showLoading(true)
+        let _args = JSON.parse(getItemFromLocalStorage(LOGIN_ARGS) as string) as LoginArgs
+        const aesKey = await importAESKey(aesKeyStr);
+        const keyPair = createKeyPair();
+        _args.pubKey = keyPair.publicKey;
+        _args.secretKey = await encryptAES(keyPair.privateKey, aesKey);
+        await loginAndSetCode(_args);
+    }
+
+    const loginAndSetCode = async (arg: LoginArgs) => {
+        showLoading(true);
+        removeItemFromLocalStorage(LOGIN_ARGS)
+        const res = await loginUser(arg);
+        if (res.err) {
+            setError(res.err);
+            clearKeyStore();
+        }
+        setAuthCode(res.data?.token as string);
+        const loginRes = res.data as LoginResponse
+        storePublicKeyData(loginRes.user.pubKey, getAddressFromPubKey(loginRes.user.pubKey));
+        storePrivateKey(loginRes.user.secretKey);
+        showLoading(false);
+    }
+
+    const loginUsingData = async () => {
+        // Show loading and replace the buttons
+        showLoading(true);
+        // Closing the error alert if any
+        setError(null);
+        let _args = JSON.parse(getItemFromLocalStorage(LOGIN_ARGS) as string) as LoginArgs
+        
+        const eoaExists = await fetchUserEOAExistence(_args.eoa as string);
+        if (!eoaExists) {
+            showLoading(false);
+            setOpenPassDiag(true);
+            return;
+        }
+           
+        // Login without keys
+        await loginAndSetCode(_args);
+        // showLoading(false);
+
+    }
 
 
     const web3AuthClick = async () => {
@@ -46,15 +118,43 @@ export default function Login() {
                  },
             });
             await web3auth.initModal();
-            await web3auth.connect();
-            const app_scoped_privkey = await web3auth.provider?.request({
-                method: "eth_private_key"
-            }) as any;
-            const app_pub_key = getPublicCompressed(Buffer.from(app_scoped_privkey.padStart(64, "0"), "hex")).toString("hex");
-            const user = await web3auth.getUserInfo();
-            console.log(user);
-            console.log(app_pub_key);
+            const provider = await web3auth.connect();
+            const authUser = await web3auth.authenticateUser();
+            const userInfo = await web3auth.getUserInfo();
+
+            let appPubKey;
+            let eoa;
+            let isEOAWeb2 = false
+            if (userInfo.verifierId === undefined) {
+                const keys = await provider?.request({
+                    method: 'eth_accounts'
+                }) as string[];
+                appPubKey = keys[0];
+                isEOAWeb2 = false;
+                eoa = appPubKey
+            }else {
+                const app_scoped_privkey = await web3auth.provider?.request({
+                        method: "eth_private_key"
+                    }) as any;
+                appPubKey = getPublicCompressed(Buffer.from(app_scoped_privkey.padStart(64, "0"), "hex")).toString("hex");
+                eoa = userInfo.verifierId;
+                isEOAWeb2 = true;
+            }
+            let _arg = {
+                route: 'wa',
+                eoa,
+                wa: {
+                    appPubKey: appPubKey,
+                    idToken: authUser.idToken,
+                    isEOAWeb2: isEOAWeb2
+                }
+            }
+            storeItemInLocalStorage(LOGIN_ARGS, JSON.stringify(_arg))
+            
+
+            await loginUsingData();
         }catch (err) {
+            console.log(err);
             setError('Unknown error')
         }
     }
@@ -71,8 +171,23 @@ export default function Login() {
             })
             const authorization = await uauth.loginWithPopup();
             const account = uauth.getAuthorizationAccount(authorization);
-            console.log(account);
+
+            console.log('Uding');
+            
+            let _arg = {
+                route: 'ud',
+                eoa: account?.address as string,
+                ud: {
+                    message: btoa(account?.message as string),
+                    signature: account?.signature as string
+                }
+            }
+            storeItemInLocalStorage(LOGIN_ARGS, JSON.stringify(_arg))
+
+            // await loginUsingData();
         }catch (e) {
+            console.log(e);
+            
             setError('Unknown error')
         }
     }
@@ -91,12 +206,17 @@ export default function Login() {
                 justifyContent: 'center'
             }}>
 
+                <PasswordInputDialog open={openPassDiag} 
+                onSecretInput={(val) => {onSecret(val)}}
+                onClose={() => {setOpenPassDiag(false)}} />
                 <Card sx={{
                     padding: '4ch'
                 }}>
                     <Stack direction={'column'}>
                         <Typography variant="h6" textAlign={'center'}>Login</Typography>
-                        <Button 
+                        {(isLoading)? <Loader /> :
+                        <>
+                            <Button 
                         onClick={() => {web3AuthClick()}}
                          startIcon={
                             <Image width={30} src={Web3AuthLogo} alt='web3auth logo' />
@@ -109,6 +229,8 @@ export default function Login() {
                         <Button onClick={() => {onUdAuthClick()}}>
                             <Image src={UDLogo} alt='ud logo' />
                         </Button>
+                        </>
+                        }
                     </Stack>
                 </Card>
             </Box>

@@ -9,7 +9,7 @@ export async function fetchUserEOAExistence(eoa: string): Promise<boolean> {
         .post<ResponseData<{exists: boolean}>>('/login/eoa', {
             eoa
         })
-    return res.data.data?.exists || true;
+    return res.data.data?.exists as boolean;
    
 }
 
@@ -17,7 +17,7 @@ export async function fetchUserEOAExistence(eoa: string): Promise<boolean> {
 export async function loginUser(args: Partial<LoginArgs>){
     const headers: Record<string, string> = {};
     if (isAuthCodeExists()) {
-        headers['Authorization'] = getAuthCode()
+        headers['Authorization'] = 'Bearer ' + getAuthCode();
     }
     
     const res = await openServer.post<ResponseData<LoginResponse>>('/login', args,
@@ -25,6 +25,7 @@ export async function loginUser(args: Partial<LoginArgs>){
             headers: headers
         }
         );
+    // console.log(res.data);
     
     return res.data;  
 
