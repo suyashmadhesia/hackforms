@@ -144,13 +144,9 @@ export interface UserProfile {
     isEOAWeb2: boolean;
 }
 
-
-
-
-
-
-
-
-
+export interface LoginResponse {
+    user: UserProfile,
+    token: string;
+}
 
 

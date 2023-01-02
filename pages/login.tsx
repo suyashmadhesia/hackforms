@@ -11,6 +11,23 @@ import Client from '@uauth/js'
 import { useState } from "react";
 
 
+/**
+ * 
+ * Login flow
+ * 
+ * Check JWT existence 
+ *  | Yes | -> call "/login", save data and pop the nav stack
+ *  | No | -> Goto {Login}
+ * 
+ * {Login}
+ * Perform normal login flow
+ * Check eoa existence
+ *  |Yes| -> call "/login" with data
+ *  |No| -> Ask password and generate key to encrypt data then call "/login"
+ * 
+ * Pop the stack
+ * 
+ */
 
 export default function Login() {
 
