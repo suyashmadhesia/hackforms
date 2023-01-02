@@ -171,9 +171,6 @@ export default function Login() {
             })
             const authorization = await uauth.loginWithPopup();
             const account = uauth.getAuthorizationAccount(authorization);
-
-            console.log('Uding');
-            
             let _arg = {
                 route: 'ud',
                 eoa: account?.address as string,
@@ -182,6 +179,7 @@ export default function Login() {
                     signature: account?.signature as string
                 }
             }
+            storeItemInLocalStorage(LOGIN_ARGS, JSON.stringify(_arg));
             await loginUsingData();
         }catch (e) {
             console.log(e);
