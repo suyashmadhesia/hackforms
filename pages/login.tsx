@@ -182,9 +182,7 @@ export default function Login() {
                     signature: account?.signature as string
                 }
             }
-            storeItemInLocalStorage(LOGIN_ARGS, JSON.stringify(_arg))
-
-            // await loginUsingData();
+            await loginUsingData();
         }catch (e) {
             console.log(e);
             
