@@ -1,16 +1,16 @@
-// import {Web3Auth} from '@web3auth/modal';
-// import { getPublicCompressed } from "@toruslabs/eccrypto";
-import Client from '@uauth/js'
-import * as EthCrypto from 'eth-crypto'
-import { useState } from 'react';
-import LoginDialog from '../components/Login';
+// // import {Web3Auth} from '@web3auth/modal';
+// // import { getPublicCompressed } from "@toruslabs/eccrypto";
+// import Client from '@uauth/js'
+// import * as EthCrypto from 'eth-crypto'
+// import { useState } from 'react';
+// import LoginDialog from '../components/Login';
+
+import dynamic from "next/dynamic";
 
 export default function Home() {
 
-  const [open, setOpen] = useState(false)
 
   const onLoginClick = async () => {
-    setOpen(true)
     // const web3auth = new Web3Auth({
     //   clientId: process.env.NEXT_PUBLIC_WEB3AUTH_CLIENT_ID as string, // Get your Client ID from Web3Auth Dashboard
     //   chainConfig: {
@@ -70,12 +70,11 @@ export default function Home() {
     
   }
 
+
   
 
   return (
     <div>
-      <button onClick={() => {onLoginClick()}}>Login</button>
-      <LoginDialog open={open} onClose={() => {setOpen(false)}} />
     </div>
   );
 }

@@ -106,10 +106,43 @@ export interface EncryptedData<T> {
 export type EncryptedForm = EncryptedData<FormParams>;
 export type EncryptedFormResponse = EncryptedData<FormResponseParams>;
 
+export interface ResponseData<T> {
+    data?: T;
+    err?: string
+}
+
+export interface ResponseSchema<T> {
+    status: number;
+    data: ResponseData<T>
+}
 
 
 
+export interface LoginArgs {
+    route: "ud" | "wa",
+    eoa: string;
+    ud?: {
+        message: string;
+        signature: string;
+    },
+    wa?: {
+        appPubKey: string;
+        idToken: string;
+        isEOAWeb2: boolean;
+    },
+    pubKey?: string;
+    secretKey?: string;
+}
 
+
+export interface UserProfile {
+    id: number;
+    createdOn: string;
+    eoa: string;
+    pubKey: string;
+    secretKey:string;
+    isEOAWeb2: boolean;
+}
 
 
 
