@@ -32,7 +32,9 @@ export default function PasswordInputDialog(props: PasswordInputDialogProps) {
         if (secret === undefined || secret.length < 4){
             return;
         }
-        props.onSecretInput(secret as string);
+        const _sec = secret;
+        setSecret('')
+        props.onSecretInput(_sec);
     }
 
     const handleClickShowPassword = () => setShowPassword((show) => !show);

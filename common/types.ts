@@ -151,3 +151,15 @@ export interface LoginResponse {
 }
 
 
+export interface GetFormResponse {
+    formResponse: {
+        title: string,
+        formCid: string;
+        cid: string;
+        formId: string;
+        responseId: string;
+    },
+    formContentUrl: string;
+    responseContentUrl: string
+}
+

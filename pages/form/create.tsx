@@ -11,7 +11,7 @@ import { decryptAES, decryptData, digestSHA256, importAESKey, loadPublicKeyData 
 import { useRouter } from 'next/router';
 import PasswordInputDialog from '../../components/common/PasswordInputDialog';
 import BackdropLoader from '../../components/common/BackdropLoader';
-import { hasFormStored, hasFormTicker, removeFormTicker, removeStoredForm, storeForm, storeFormTicker } from '../../common/storage';
+import { hasFormTicker, removeFormTicker, removeStoredForm, storeForm, storeFormTicker } from '../../common/storage';
 
 
 
@@ -38,7 +38,6 @@ export default function CreateForm({form}: {form: EncryptedForm}) {
     const [openBackdrop, setOpenBackdrop] = useState(false);
     const [passError, setPassError] = useState<string|undefined>()
 
-    const [formStr, setFormStr] = useState('')
 
 
     const onClosePassDiag = () => {

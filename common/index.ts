@@ -2,7 +2,7 @@ import axios from "axios";
 import { FormState } from "../store/formSlice";
 import { apiServer, openServer } from "./axios";
 import { decryptData, digestSHA256, loadPublicKeyData, retrieveFile } from "./security";
-import { EncryptedData, FormParams } from "./types";
+import { EncryptedData, EncryptedForm, EncryptedFormResponse, FormParams, GetFormResponse, ResponseData } from "./types";
 
 export const EDITABLE_FORM_STATE = 'state-form';
 
@@ -100,11 +100,31 @@ export async function fetchFormUsingId(formId: string) {
     return res.data.data;
 }
 
+export function getUrlFromCid(cid: string) {
+    return `https://${cid}.ipfs.w3s.link/`
+}
+
 export async function fetchFormContentUsingId(formId:string) {
     const res = await fetchFormUsingId(formId);
     const cid = res.form.cid; 
-    const cidUrl = `https://${cid}.ipfs.w3s.link/`
-    const formRes = await axios.get(cidUrl)
+    const cidUrl = getUrlFromCid(cid)
+    const formRes = await axios.get<EncryptedForm>(cidUrl)
     const form = formRes.data  
     return form;
+}
+
+export async function fetchFormResponseUsingFormId(formId: string) {
+    const res = await apiServer.get<ResponseData<GetFormResponse>>(`/response/formId/${formId}`);
+    if (res.data.err) {
+        throw new Error(res.data.err);
+    }
+    return res.data;
+}
+
+export async function fetchResponseContentUsingFormId(formId: string) {
+    const res = await fetchFormResponseUsingFormId(formId);
+    const cid = res.data?.formResponse.cid as string;
+    const cidUrl = getUrlFromCid(cid);
+    const formRes = await axios.get<EncryptedFormResponse>(cidUrl);
+    return formRes.data;
 }
