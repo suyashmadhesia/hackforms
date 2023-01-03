@@ -1,4 +1,6 @@
+import axios from "axios";
 import { FormState } from "../store/formSlice";
+import { apiServer, openServer } from "./axios";
 import { decryptData, digestSHA256, loadPublicKeyData, retrieveFile } from "./security";
 import { EncryptedData, FormParams } from "./types";
 
@@ -79,4 +81,30 @@ export async function readEncryptedFile<T = any, D=any>(cid: string, secret?: st
         encData: file,
         decryptedValue
     }
+}
+
+
+export function getFormattedDateString(date: Date) {
+    let day = (date.getDate() + 1 < 10) ? `0${date.getDate() + 1}` : (date.getDate() + 1).toString();
+    let month = (date.getMonth() + 1  < 10) ? `0${date.getMonth() + 1}` : (date.getMonth() + 1).toString();
+    let year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+}
+
+
+export async function fetchFormUsingId(formId: string) {
+    const res = await apiServer.get(`/form/${formId}`);
+    if (res.data.err) {
+        throw new Error(res.data.err);
+    }
+    return res.data.data;
+}
+
+export async function fetchFormContentUsingId(formId:string) {
+    const res = await fetchFormUsingId(formId);
+    const cid = res.form.cid; 
+    const cidUrl = `https://${cid}.ipfs.w3s.link/`
+    const formRes = await axios.get(cidUrl)
+    const form = formRes.data  
+    return form;
 }

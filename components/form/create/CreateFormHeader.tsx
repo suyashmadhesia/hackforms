@@ -4,16 +4,22 @@ import Box from '@mui/material/Box';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Tabs, { TabsProps } from '@mui/material/Tabs';
 import Tab, { TabProps } from '@mui/material/Tab';
-import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 
 
 
 import { useAppSelector } from '../../../store/hooks';
-import {formActions} from '../../../store/formSlice';
+import {formActions, formGetters} from '../../../store/formSlice';
 import {  styled } from '@mui/material';
 import {colors} from '../../../styles/theme';
 import ConfirmationDialog from './ConfirmationDialog';
+import { getStoredForm, hasFormStored, removeStoredForm } from '../../../common/storage';
+import { useEffect, useState } from 'react';
+import BackdropLoader from '../../common/BackdropLoader';
+import { decryptAES, decryptData, digestSHA256, encryptAES, generateAESKeyFromSeed, getPublicKeyFromPrivKey, importAESKey, loadPrivateKeys, loadPublicKeyData } from '../../../common/security';
+import PasswordInputDialog from '../../common/PasswordInputDialog';
+import { apiServer } from '../../../common/axios';
+import { useRouter } from 'next/router';
 
 export const StyledTabs = styled((props: TabsProps) => (
     <Tabs 
@@ -49,27 +55,127 @@ export const StyledTab = styled((props: TabProps) => (
 
 
 
+async function getEncKey(data: {pubKey: string, secret: string, subRecord: Record<string, string>, keyHash?: string}) {
+    const aesKey = await generateAESKeyFromSeed(data.secret);
+    const encryptedPrivateKey = loadPrivateKeys();
+    const privKey = await decryptAES(encryptedPrivateKey, aesKey);
+    if(getPublicKeyFromPrivKey(privKey) !== data.pubKey) {
+        console.log('Password entered was wrong')
+        return 
+    }
+    const encKeyStr = await decryptData(data.subRecord[data.pubKey], data.secret);
+    if (data.keyHash === undefined || digestSHA256(encKeyStr) !== data.keyHash) {
+        // TODO: add interactive password error;
+        console.log('Password entered was wrong');
+        return 
+    }
+    return encKeyStr;
+}
+
+
 
 export default function FormHeader() {
-
-    const [title, tabName, access] = useAppSelector(state => [state.form.form.title, 
+    const [tabName, hash, subRecord, keyHash, access, formId] = useAppSelector(state => [ 
         state.form.tabName,
-        state.form.access
+        state.form.hash,
+        state.form.subRecord,
+        state.form.keyHash,
+        state.form.formParams.access,
+        state.form.formParams.formId
     ]);
 
+    const getters = useAppSelector(state => formGetters(state.form));
+    
     const dispatch = useDispatch();
 
-    const onTitleValueInput = (value: string) => {
-        dispatch(formActions.setTitle(value))
-    }
+    const [openDialog, setOpenDialog] = useState(false)
+    const [openBackdrop, setOpenBackdrop] = useState(false)
+    const [openPassDiag, setOpenPassDiag] = useState(false);
+
+    const route = useRouter();
+
+    useEffect(() => {
+
+    }, [])
 
     const onTabChange = (name: string) => {
         dispatch(formActions.setTabIndex(name));
     }
 
+    const encryptForm = async (secret: string) => {
+        
+
+        const form = getStoredForm() as string;
+        if (access === 'public' || access === undefined) {
+            return [form, digestSHA256(form)]
+        }
+        if (hash !== undefined && hash !== digestSHA256(form)){
+            // TODO: add interactive error
+            console.log("Hash of the form is not matching");
+            return []
+        }
+        const pubKey = loadPublicKeyData()
+        
+        const encKeyStr = await getEncKey({
+            pubKey: pubKey.pubKey,
+            secret: secret,
+            subRecord,
+            keyHash
+        });
+        if ( encKeyStr === undefined) {
+            console.log("Enc key is empty");
+            return [];
+        }
+        const encryptForm = await encryptAES(form, await importAESKey(encKeyStr));
+        dispatch(formActions.setEncData(encryptForm));
+        dispatch(formActions.setHash(form));
+        return [encryptForm, digestSHA256(form)];
+        
+        // TODO: Implement further logic
+    }
+
+    const onConfirm = () => {
+        setOpenDialog(false)
+        setOpenPassDiag(true);
+        
+    }
+
+    const onSecret = async (secret: string) => {
+        setOpenPassDiag(false);
+        setOpenBackdrop(true)
+        const _res = await encryptForm(secret)
+        if (_res.length < 2) {
+            console.log('encryption failed')
+        }
+
+        const form = getters.getFormattedForm(_res[0], _res[1]);
+        // return;
+        const requestData = {
+            form,
+        }       
+        const pubKey = loadPublicKeyData()
+        if (access !== undefined && access !== "public"){
+            (requestData as any).key = subRecord[pubKey.pubKey]
+        }
+
+        const url = (formId === undefined) ? '/form/create': '/form/update'
+        const res = await apiServer.post(url, requestData);
+        dispatch(formActions.setFormId(res.data.data.form.id))
+        // dispatch(formActions.setRawContentUrl(res.data.data.rawContentUrl));
+        removeStoredForm();
+        setOpenBackdrop(false)
+        route.replace(`/form/create?formId=${res.data.data.form.id}`)
+        
+        
+        
+    }
+
 
     const onPublishClick = () => {
-        dispatch(formActions.setOpenConfirmationDialogState(true));
+        if (!hasFormStored()) {
+            return;
+        }
+        setOpenDialog(true);
     }
 
     return <Box component="div" sx={{
@@ -111,7 +217,14 @@ export default function FormHeader() {
                 </StyledTabs>
         </Box>
         {/** Confirmation Dialog */}
-        {/* <ConfirmationDialog /> */}
+        <ConfirmationDialog openConfirmationDialog={openDialog}
+            onClose={() => {setOpenDialog(false)}}
+            onConfirm={onConfirm}
+        />
+
+        <BackdropLoader open={openBackdrop} onClose={() => {setOpenBackdrop(false)}} />
+
+        <PasswordInputDialog open={openPassDiag} onClose={() => {setOpenPassDiag(false)}} onSecretInput={onSecret} />
 
         {/* Control */}
         <Box sx={{

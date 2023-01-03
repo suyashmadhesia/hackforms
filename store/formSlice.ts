@@ -1,16 +1,52 @@
-import { PayloadAction, createSlice } from "@reduxjs/toolkit";
+import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { HYDRATE } from "next-redux-wrapper";
-import {  FormParams, FormTheme, Page, Question } from "../common/types";
+import {  EncryptedForm, FormParams, FormTheme, Page, Question } from "../common/types";
 import { QuestionTypesData, QuestionTypesEnum } from "../common/question";
 import { setEditableFormStateFromStorage } from "../common";
+import { digestSHA256, loadPublicKeyData } from "../common/security";
+import { getEOA, getStoredForm } from "../common/storage";
 
 
 export type Form = {title?: string, description?: string, logo?: string} & Record<string ,any>
 
 
+export function getPackedFormFromState(state: FormState, data: {
+    pubKey: string,
+    eoa: string,
+    data: string, 
+    hash: string
+}) {
+    const params = {...state.formParams} as FormParams
+    const formJSON = JSON.parse(getStoredForm() as string)
+    params.title = formJSON.title;
+    params.description = formJSON.description;
+    const form: EncryptedForm ={
+        header: {
+            alg: 'AES-GCM',
+            keyEncAlg: 'ECDSA',
+            access: (state.formParams.access as any) || "public"
+        },
+        payload: {
+            data: data.data,
+            meta: params,
+            iss: data.pubKey,
+            owner: data.eoa,
+            subRecord: state.subRecord,
+            inviteList: state.inviteList
+        },
+        proof: {
+            hash: data.hash,
+            keyHash: state.keyHash as string,
+
+        }
+    };
+    return form;
+
+
+}
+
 export interface FormState {
     tabName: string
-    access: string
     isEditable: boolean;
     openQuestionSelectionDialog: boolean;
     openConfirmationDialog: boolean;
@@ -20,11 +56,18 @@ export interface FormState {
     formParams: Partial<FormParams>;
     encKey?: string;
     form: Form;
+    subRecord: Record<string, string>;
+    inviteList: string[];
+    hash?: string;
+    encData: string;
+    iss?: string;
+    owner?: string;
+    keyHash?: string;
+    rawContentUrl?: string;
 }
 
 const initialState: FormState = {
     tabName: 'create',
-    access: 'private',
     isEditable: false,
     openQuestionSelectionDialog: false,
     openConfirmationDialog: true,
@@ -33,11 +76,16 @@ const initialState: FormState = {
     formParams: {
         isClosed: false,
         isPayable: false,
-        access: 'private'
+        access: 'public',
+        rate: 0,
     },
     form: {
         title: 'Untitled'
-    }
+    },
+    subRecord: {},
+    inviteList: [],
+    encData: ''
+
 }
 
 
@@ -55,12 +103,43 @@ function _removePageAtIndex(pages: Page[], index: number) {
     });
 }
 
+
 export const formSlice = createSlice({
     name: 'form',
     initialState,
     reducers: {
-        setForm(state, action: PayloadAction<Form>) {
-            // state.form = Object.assign({}, action.payload)
+        loadEncForm(state, action: PayloadAction<EncryptedForm>) {
+            state.formParams = {...action.payload.payload.meta};
+            state.subRecord = action.payload.payload.subRecord;
+            state.inviteList = action.payload.payload.inviteList;
+            state.hash = action.payload.proof.hash;
+            state.keyHash = action.payload.proof.keyHash;
+            state.iss = action.payload.payload.iss;
+            state.owner = action.payload.payload.owner;
+        },
+        setFormId(state, action: PayloadAction<string>) {
+            state.formParams.formId = action.payload;
+        },
+        setRawContentUrl(state, action: PayloadAction<string>) {
+            state.rawContentUrl = action.payload;
+        },
+        setEncData(state, action: PayloadAction<string>) {
+            state.encData = action.payload;
+        },
+        setKeyHash(state, action: PayloadAction<string | undefined>){
+            state.keyHash = action.payload;
+        },
+
+        addRecord(state, action: PayloadAction<[string, string]>){
+            state.subRecord[action.payload[0]] = action.payload[1];
+        },
+
+        addInInviteList(state, action: PayloadAction<string>){
+            state.inviteList.push(action.payload);
+        },
+
+        setHash(state, action:PayloadAction<string>) {
+            state.hash = digestSHA256(action.payload);
         },
 
         setTitle(state, action: PayloadAction<string>){
@@ -108,9 +187,7 @@ export const formSlice = createSlice({
             setEditableFormStateFromStorage(state);
         },
         setAccess(state, action: PayloadAction<string>) {
-            state.access = action.payload;
-            // Storing the form state
-            setEditableFormStateFromStorage(state);
+            state.formParams.access = action.payload;
         },
         setOpenQuestionSelectDialogState(state, action: PayloadAction<boolean>) {
             state.openQuestionSelectionDialog = action.payload;
@@ -239,6 +316,16 @@ export const formGetters = (state: FormState) => ({
     },
     getCurrentPageIndex() {
         return state.currentPageIndex;
+    },
+    getFormattedForm(data: string, hash: string) {
+        const pubKey = loadPublicKeyData().pubKey;
+        const eoa = getEOA() as string;
+        return getPackedFormFromState(state, {
+            pubKey,
+            eoa,
+            data,
+            hash
+        });
     }
     
 });

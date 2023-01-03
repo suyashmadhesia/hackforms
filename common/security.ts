@@ -15,7 +15,7 @@ function getAccessToken () {
   // environement variable or other configuration that's kept outside of
   // your code base. For this to work, you need to set the
   // WEB3STORAGE_TOKEN environment variable before you run your code.
-  return process.env.WEB3STORAGE_TOKEN
+  return process.env.NEXT_PUBLIC_WEB3STORAGE_TOKEN
 }
 
 function makeStorageClient () {
@@ -239,6 +239,11 @@ export async function retrieveFile<T=any>(cid: string) {
     const files = (await res.files())[0];
     const jsonString = getStringFromArrayBuffer(await files.arrayBuffer());
     return JSON.parse(jsonString) as EncryptedData<T>;  
+}
+
+
+export function getPublicKeyFromPrivKey(privKey: string) {
+    return EthCrypto.publicKeyByPrivateKey(privKey)
 }
 
 

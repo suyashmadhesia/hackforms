@@ -1,4 +1,6 @@
 const AUTH_CODE = 'cgh_id'
+const CREATE_FORM = 'survey-json'
+const FORM_TICKER = 'form-ticker'
 
 export function storeItemInLocalStorage(key: string, value: string ) {
     window.localStorage.setItem(key, value);
@@ -26,4 +28,41 @@ export function setAuthCode(code: string) {
 
 export function getAuthCode(): string {
     return getItemFromLocalStorage(AUTH_CODE) as string;
+}
+export function storeForm(form: string) {
+    storeItemInLocalStorage(CREATE_FORM, form);
+}
+
+export function getStoredForm() {
+    return getItemFromLocalStorage(CREATE_FORM);
+}
+
+export function removeStoredForm() {
+    removeItemFromLocalStorage(CREATE_FORM)
+}
+
+export function hasFormStored() {
+    const form = getStoredForm();
+    return form !== null && form !== 'null' && form.length > 0;
+}
+
+export function storeFormTicker(ticker: string) {
+    storeItemInLocalStorage(FORM_TICKER, ticker);
+}
+
+export function getFormTicker() {
+    return getItemFromLocalStorage(FORM_TICKER)
+}
+
+export function hasFormTicker(){
+    return getFormTicker() !== null;
+}
+export function removeFormTicker() {
+    removeItemFromLocalStorage(FORM_TICKER)
+}
+export function storeEOA(eoa: string) {
+    storeItemInLocalStorage('eoa', eoa)
+}
+export function getEOA() {
+    return getItemFromLocalStorage('eoa')
 }

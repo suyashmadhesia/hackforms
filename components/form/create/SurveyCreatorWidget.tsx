@@ -1,9 +1,10 @@
 
 import { useEffect } from "react";
 import { SurveyCreatorComponent, SurveyCreator } from "survey-creator-react";
-import { useAppSelector } from "../../../store/hooks";
+import { getStoredForm, storeForm } from "../../../common/storage";
 import { useDispatch } from "react-redux";
 import { formActions } from "../../../store/formSlice";
+
 
 
 
@@ -15,10 +16,13 @@ export default function SurveyCreatorWidget() {
     };
 
     const creator = new SurveyCreator(creatorOptions);
-    creator.text = window.localStorage.getItem('survey-json') || ''
+    creator.text = getStoredForm() || '';
+
+    const dispatch = useDispatch()
 
     creator.saveSurveyFunc = (saveNo: number, callback: (a: number, b: boolean) => void) => {
-      window.localStorage.setItem('survey-json', creator.text) 
+      storeForm(creator.text);
+      dispatch(formActions.setHash(creator.text));
       callback(saveNo, true);
     }
 

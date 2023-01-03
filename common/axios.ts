@@ -10,7 +10,7 @@ export const openServer = axios.create({
 })
 
 export const apiServer = axios.create({
-    baseURL: BASE_URL
+    baseURL: BASE_URL + '/api'
 });
 
 if (typeof window !== 'undefined') {

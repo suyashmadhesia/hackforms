@@ -1,30 +1,69 @@
-import { Dialog, DialogContent, DialogTitle, FormControl, FormControlLabel, Switch, Stack, Step, StepLabel, Stepper, TextField, Button, Typography } from "@mui/material";
+import { Dialog, DialogContent, DialogTitle, FormControl, FormControlLabel, Switch, Stack, Step, StepLabel, Stepper, TextField, Button, Typography, InputLabel, Select, MenuItem } from "@mui/material";
 import { useAppSelector } from "../../../store/hooks";
 import { useDispatch } from "react-redux";
 import { formActions } from "../../../store/formSlice";
 import { useState } from "react";
 import { colors } from "../../../styles/theme";
+import PasswordInputDialog from "../../common/PasswordInputDialog";
+import { decryptAES, decryptData, digestSHA256, encryptWithPublicKey, exportAESKey, generateAESKey, generateAESKeyFromSeed, getPublicKeyFromPrivKey, importAESKey, loadPrivateKeys, loadPublicKeyData } from "../../../common/security";
+import { getFormattedDateString } from "../../../common";
+import dayjs, { Dayjs } from 'dayjs';
+
 
 
 function Configurations(props: {index: number, onNext: (index: number) => void}) {
 
-    const [title, description, startDate, endDate, isClosed] = useAppSelector(state =>[
-        state.form.formIntro.title,
-        state.form.formIntro.description,
+    const [access,startDate, endDate, isClosed, params] = useAppSelector(state =>[
+        state.form.formParams.access,
         state.form.formParams.startDate,
         state.form.formParams.endDate,
-        state.form.formParams.isClosed
-    ])
+        state.form.formParams.isClosed,
+        state.form.formParams
+    ]);
 
-    const dispatch = useDispatch()
+    const getFormattedDate = (dateStr?: string) => {
+        if (dateStr === undefined) return dateStr;
+        return dayjs(dateStr).format('YYYY-MM-DD')
+    }
+    
 
-    const titleHandler = (value: string) => {
-        dispatch(formActions.setTitle(value));
+    const [openPassDiag, setOpenPassDiag] = useState(false);
+
+    const dispatch = useDispatch();
+
+    const pubKey = loadPublicKeyData();
+
+
+    const getPasswordInputTitle = () => {
+        return 'Encrypting the form';
     }
 
-    const descriptionHandler = (value: string) => {
-        dispatch(formActions.setIntroDescription(value));
+    const generateEncKey = async () => {
+        const formEncKeyStr = await exportAESKey(await generateAESKey()); 
+        const encryptedAesKey = await encryptWithPublicKey(pubKey.pubKey, formEncKeyStr);
+        dispatch(formActions.addRecord([pubKey.pubKey, encryptedAesKey]));
+        dispatch(formActions.setKeyHash(digestSHA256(formEncKeyStr)));
     }
+
+    // const invitePublicKey = async (pubKey: string, secret: string) => {
+    //     const encKeyStr = await getEncKey({
+    //         pubKey: pubKey,
+    //         secret
+    //     });
+    //     if ( encKeyStr === undefined) {
+    //         return;
+    //     }
+    //     const pubKeyEncryptedKeyStr = await encryptWithPublicKey(pubKey, encKeyStr);
+    //     dispatch(formActions.addRecord([pubKey, pubKeyEncryptedKeyStr]));
+    // }   
+
+    
+
+
+
+    const onSecret = async (secret: string) => {
+    }
+
 
     const startDateHandler = (value: string) => {
         dispatch(formActions.setStartDate(value))
@@ -39,22 +78,57 @@ function Configurations(props: {index: number, onNext: (index: number) => void})
     }
 
     const onContinueClick = () => {
+        if (startDate === undefined || startDate.length === 0) {
+            dispatch(formActions.setStartDate(
+                getFormattedDateString(new Date(Date.now()))
+            ));
+        } 
         props.onNext(props.index)
     }
 
+    const onAccessSelect = async (val: string) => {
+        dispatch(formActions.setAccess(val))
+        if (val !== 'public') {
+            await generateEncKey();
+        }
+    }
+
     return <Stack direction={'column'} spacing={2}>
-        <TextField value={title} onChange={(e) => {titleHandler(e.target.value)}} fullWidth required label='Title' variant="outlined"></TextField>
-        <TextField value={description} onChange={(e) => {descriptionHandler(e.target.value)}} fullWidth multiline maxRows={4} label='Description' variant="outlined"></TextField>
+        
         <Stack direction='row' spacing={2}>
            <FormControl>
             <label>Start Date</label>
-           <TextField value={startDate} onChange={(e) => {startDateHandler(e.target.value)}} placeholder="Start Date" variant="outlined" type='date' ></TextField>
+           <TextField  value={getFormattedDate(startDate)} onChange={(e) => {startDateHandler(e.target.value)}} placeholder="Start Date" variant="outlined" type='date' ></TextField>
            </FormControl>
            <FormControl>
             <label>End Date</label>
-           <TextField value={endDate} onChange={(e) => {endDateHandler(e.target.value)}} placeholder="End Date" variant="outlined" type='date' ></TextField>
+           <TextField value={getFormattedDate(endDate)} onChange={(e) => {endDateHandler(e.target.value)}} placeholder="End Date" variant="outlined" type='date' ></TextField>
            </FormControl>
         </Stack>
+        <FormControl fullWidth>
+            <InputLabel id="access-label">Access</InputLabel>
+            <Select
+                labelId="access-label"
+                id="access-label"
+                value={access}
+                label='Access'
+                onChange={(e) => {onAccessSelect(e.target.value)}}
+            >
+                <MenuItem id='public' value={'public'}>Public</MenuItem>
+                <MenuItem id='private' value={'private'}>Private</MenuItem>
+                {/* <MenuItem value={'protected'}>Protected</MenuItem> */}
+            </Select>
+        </FormControl>
+
+        <PasswordInputDialog open={openPassDiag}
+        title={getPasswordInputTitle()}
+        onClose={() => {
+            setOpenPassDiag(false)
+        }} 
+        
+        onSecretInput={onSecret}
+        />
+
         <FormControlLabel label='Form accepting response? ' 
         control={
         <Switch checked={!isClosed} 
@@ -136,22 +210,26 @@ function Reward(props: {index: number, onNext: (index: number) => void}) {
 }
 
 
-export default function ConfirmationDialog() {
-    const [openConfirmationDialog] = useAppSelector(state => [state.form.openConfirmationDialog]);
-    const dispatch = useDispatch()
-
+export default function ConfirmationDialog(props: {
+    openConfirmationDialog: boolean;
+    onClose: () => void;
+    onConfirm: () => void;
+}) {
+    // const [openConfirmationDialog] = useAppSelector(state => [state.form.openConfirmationDialog]);
     const [step, setStep] = useState(0)
 
     const onNext = (index: number) => {
-        if (index < 4){
+        if (index < 1){
             setStep(index + 1)
+        }else {
+            props.onConfirm()
         }
     }
 
     const onCloseHandler = () => {
-        dispatch(formActions.setOpenConfirmationDialogState(false))
+        props.onClose()
     }
-    return <Dialog open={openConfirmationDialog} onClose={onCloseHandler}>
+    return <Dialog open={props.openConfirmationDialog} onClose={onCloseHandler}>
         <DialogTitle marginBottom={'2ch'}>
             <Stepper activeStep={step} alternativeLabel>
                 <Step key={0}>
@@ -160,12 +238,12 @@ export default function ConfirmationDialog() {
                 <Step key={1}>
                     <StepLabel>Rewards</StepLabel>
                 </Step>
-                <Step key={2}>
-                    <StepLabel>Share</StepLabel>
-                </Step>
-                <Step key={3}>
+                {/* <Step key={2}>
+                    <StepLabel>Invite</StepLabel>
+                </Step> */}
+                {/* <Step key={2}>
                     <StepLabel>Processing</StepLabel>
-                </Step>
+                </Step> */}
 
             </Stepper>
         </DialogTitle>

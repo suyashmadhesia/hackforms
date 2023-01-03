@@ -100,6 +100,7 @@ export interface EncryptedData<T> {
     proof: {
         hash: string;
         signature?: string;
+        keyHash?: string;
     }
 }
 
