@@ -14,9 +14,9 @@ import { useRouter } from 'next/router'
 import Loader from "../common/ProgrssBar";
 import { LoginArgs, LoginResponse } from "../common/types";
 import { fetchUserEOAExistence, loginUser } from "../common/api";
-import { getItemFromLocalStorage, removeItemFromLocalStorage, setAuthCode, storeItemInLocalStorage } from "../common/storage";
+import { getItemFromLocalStorage, removeAuthCode, removeItemFromLocalStorage, setAuthCode, storeItemInLocalStorage } from "../common/storage";
 import PasswordInputDialog from "../components/common/PasswordInputDialog";
-import { clearKeyStore, createKeyPair, encryptAES, getAddressFromPubKey, importAESKey, storePrivateKey, storePublicKeyData } from "../common/security";
+import { clearKeyStore, createKeyPair, encryptAES, generateAESKeyFromSeed, getAddressFromPubKey, importAESKey, storePrivateKey, storePublicKeyData } from "../common/security";
 
 /**
  * 
@@ -47,6 +47,7 @@ export default function Login() {
     const loginStatus = useGetLoginStatus();
 
     useEffect(() => {
+        if(!router.isReady) return;
         if (loginStatus) {
             // TODO: add option to go back or go to dashboard
             if (router.query.redirected !== undefined){
@@ -54,8 +55,10 @@ export default function Login() {
             }else{
                 router.replace('/dashboard')
             }
+        }else {
+            removeAuthCode();
         }
-    },[loginStatus, router])
+    },[loginStatus, router.isReady, router])
 
     const onSecret = async (aesKeyStr: string) => {
         // Close the dialog box
@@ -63,7 +66,7 @@ export default function Login() {
         // Show loading screen again
         showLoading(true)
         let _args = JSON.parse(getItemFromLocalStorage(LOGIN_ARGS) as string) as LoginArgs
-        const aesKey = await importAESKey(aesKeyStr);
+        const aesKey = await generateAESKeyFromSeed(aesKeyStr);
         const keyPair = createKeyPair();
         _args.pubKey = keyPair.publicKey;
         _args.secretKey = await encryptAES(keyPair.privateKey, aesKey);
@@ -83,6 +86,7 @@ export default function Login() {
         storePublicKeyData(loginRes.user.pubKey, getAddressFromPubKey(loginRes.user.pubKey));
         storePrivateKey(loginRes.user.secretKey);
         showLoading(false);
+        router.reload();
     }
 
     const loginUsingData = async () => {

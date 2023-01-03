@@ -122,7 +122,7 @@ export async function fetchFormResponseUsingFormId(formId: string) {
 }
 
 export async function fetchResponseContentUsingFormId(formId: string) {
-    const res = await fetchFormResponseUsingFormId(formId);
+    const res = await fetchFormResponseUsingFormId(formId); 
     const cid = res.data?.formResponse.cid as string;
     const cidUrl = getUrlFromCid(cid);
     const formRes = await axios.get<EncryptedFormResponse>(cidUrl);

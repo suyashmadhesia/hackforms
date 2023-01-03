@@ -172,7 +172,10 @@ export async function securePrivateKey(privateKey: string, secret: string) {
 }
 
 
-export function storePublicKeyData(pubKey: string, address: string) {
+export function storePublicKeyData(pubKey: string, address?: string) {
+    if (address === undefined){
+        address = EthCrypto.publicKey.toAddress(pubKey)
+    }
     storeItemInLocalStorage(PUBLIC_DETAILS, JSON.stringify({pubKey, address}))
 }
 

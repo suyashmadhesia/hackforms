@@ -33,6 +33,10 @@ export function storeForm(form: string) {
     storeItemInLocalStorage(CREATE_FORM, form);
 }
 
+export function removeAuthCode() {
+    removeItemFromLocalStorage(AUTH_CODE)
+}
+
 export function getStoredForm() {
     return getItemFromLocalStorage(CREATE_FORM);
 }

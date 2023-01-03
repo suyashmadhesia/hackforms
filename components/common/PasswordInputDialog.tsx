@@ -81,7 +81,7 @@ export default function PasswordInputDialog(props: PasswordInputDialogProps) {
             />
             {
                 (props.errorText) ? <FormHelperText sx={{color: 'red'}} id="component-helper-text">
-                Password is not matching
+                {props.errorText}
             </FormHelperText>: <></>
             }
             </FormControl>

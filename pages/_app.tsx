@@ -5,11 +5,19 @@ import "survey-creator-core/survey-creator-core.min.css";
 // import "tailwindcss/tailwind.css";
 import type { AppProps } from "next/app";
 import { wrapper } from "../store";
+import CustomErrorBoundary from "../components/common/CutomErrorBoundary";
+import { useRouter } from "next/router";
 
 
 
 function App({ Component, pageProps }: AppProps) {
-  return (<Component {...pageProps} />);
+  const router = useRouter()
+  return (
+    <CustomErrorBoundary router={router}>
+      <Component {...pageProps} />
+    </CustomErrorBoundary>
+    
+  );
 }
 
 export default wrapper.withRedux(App);

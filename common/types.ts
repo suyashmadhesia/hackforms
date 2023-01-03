@@ -163,3 +163,22 @@ export interface GetFormResponse {
     responseContentUrl: string
 }
 
+
+
+export type FormResponse = {
+    id: string
+    createdOn: Date
+    updatedOn: Date
+    formId: string
+    ownerEOA: string
+    ownerpubKey: string
+    cid: string
+    userId: number
+    access: string
+  }
+
+  
+export interface SerializedFormResponse {
+    formResponse: Partial<FormResponse>;
+    rawContentUrl: string;
+}

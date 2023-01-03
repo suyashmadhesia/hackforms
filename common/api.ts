@@ -25,8 +25,6 @@ export async function loginUser(args: Partial<LoginArgs>){
             headers: headers
         }
         );
-    // console.log(res.data);
-    
     return res.data;  
 
 }
