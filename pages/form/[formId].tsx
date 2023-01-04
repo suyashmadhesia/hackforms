@@ -114,6 +114,9 @@ export default function FormPage(props: FormPageInterface) {
 
         if (!router.isReady) return; 
         const eoa = getEOA();
+        if (eoa === null) {
+            router.push('/login?redirected=true')
+        }
         if (eoa !== null && props.form.payload.owner === eoa) {
             router.replace(`/form/create?formId=${props.form.payload.meta.formId as string}`)
         }

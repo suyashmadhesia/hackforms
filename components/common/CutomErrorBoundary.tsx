@@ -30,7 +30,7 @@ class CustomErrorBoundary extends React.Component<Props,State> {
 
     routeToLogin() {
         this.props.router.push('/login?redirected=true');
-        this.props.router.reload()
+        // this.props.router.reload()
     }
 
     handleTryAgainClick() {
@@ -41,7 +41,7 @@ class CustomErrorBoundary extends React.Component<Props,State> {
     componentDidCatch(error: Error, errorInfo: ErrorInfo) {
       // You can use your own error logging service here
       console.log({ error, errorInfo });
-      this.routeToLogin()
+      // this.routeToLogin()
     }
 
 

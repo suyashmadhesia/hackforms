@@ -14,6 +14,7 @@ import BackdropLoader from '../../components/common/BackdropLoader';
 import { hasFormTicker, removeFormTicker, removeStoredForm, storeForm, storeFormTicker } from '../../common/storage';
 import { useAppSelector } from '../../store/hooks';
 import ShareForm from '../../components/form/create/ShareForm';
+import FormResults from '../../components/form/create/FormResults';
 
 
 
@@ -142,6 +143,9 @@ export default function CreateForm({form}: {form: EncryptedForm}) {
                 }
                 {
                     (tabName === 'share' && form !== undefined)? <ShareForm form={form} />: <></>
+                }
+                {
+                    (tabName === 'result' && form !== undefined)? <FormResults form={form} /> : <></>
                 }
             </Box>
             
