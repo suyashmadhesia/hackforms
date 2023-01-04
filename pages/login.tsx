@@ -51,9 +51,9 @@ export default function Login() {
         if (loginStatus) {
             // TODO: add option to go back or go to dashboard
             if (router.query.redirected !== undefined){
-                console.log(loginStatus);
+                // console.log(loginStatus);
                 
-                // router.back()
+                router.back()
             }else{
                 router.replace('/dashboard')
             }

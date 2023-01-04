@@ -182,3 +182,18 @@ export interface SerializedFormResponse {
     formResponse: Partial<FormResponse>;
     rawContentUrl: string;
 }
+
+export interface CompactResponseData {
+    id: string,
+    cid: string,
+    url: string
+}
+export interface SerializedFormAnalytics {
+    numberOfResponse: number;
+    responses: Array<CompactResponseData>
+}
+
+export interface FormResponseData {
+    res: Record<string, string>;
+    dataFrame: Record<string, string>;
+}

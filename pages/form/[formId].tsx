@@ -69,8 +69,8 @@ export default function FormPage(props: FormPageInterface) {
         const surveyJson: Record<string, string> = {}
         const surveyWithQuestionTitle: Record<string, string> = {}
         for(const ques of surveyJsonArray) {
-            surveyJson[ques.name] = ques.value;
-            surveyWithQuestionTitle[ques.title || ques.name] = ques.value;
+            surveyJson[ques.name] = ques.displayValue;
+            surveyWithQuestionTitle[ques.title || ques.name] = ques.displayValue;
         }
         return {
             res: surveyJson,
@@ -315,7 +315,7 @@ export default function FormPage(props: FormPageInterface) {
         <PasswordInputDialog 
                 onSecretInput={onSecret}
                 errorText={passError}
-                open={openPassDiag} onClose={} />
+                open={openPassDiag} onClose={()=>{}} />
         <Snackbar open={error !== null} autoHideDuration={6000} onClose={() => {setError(null)}}>
             <Alert onClose={() => {setError(null)}} severity="error" sx={{ width: '100%' }}>
                 {error}
