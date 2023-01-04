@@ -123,7 +123,7 @@ function Configurations(props: {index: number, onNext: (index: number) => void})
         <PasswordInputDialog open={openPassDiag}
         title={getPasswordInputTitle()}
         onClose={() => {
-            setOpenPassDiag(false)
+            
         }} 
         
         onSecretInput={onSecret}

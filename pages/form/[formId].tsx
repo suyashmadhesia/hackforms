@@ -315,7 +315,7 @@ export default function FormPage(props: FormPageInterface) {
         <PasswordInputDialog 
                 onSecretInput={onSecret}
                 errorText={passError}
-                open={openPassDiag} onClose={onClosePassDiag} />
+                open={openPassDiag} onClose={} />
         <Snackbar open={error !== null} autoHideDuration={6000} onClose={() => {setError(null)}}>
             <Alert onClose={() => {setError(null)}} severity="error" sx={{ width: '100%' }}>
                 {error}

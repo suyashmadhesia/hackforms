@@ -233,7 +233,7 @@ export default function FormHeader() {
 
         <BackdropLoader open={openBackdrop} onClose={() => {setOpenBackdrop(false)}} />
 
-        <PasswordInputDialog open={openPassDiag} onClose={() => {setOpenPassDiag(false)}} onSecretInput={onSecret} />
+        <PasswordInputDialog open={openPassDiag} onClose={() => {}} onSecretInput={onSecret} />
 
         {/* Control */}
         <Box sx={{

@@ -136,7 +136,7 @@ export default function CreateForm({form}: {form: EncryptedForm}) {
                 <PasswordInputDialog 
                 onSecretInput={onSecret}
                 errorText={passError}
-                open={openPassDiag} onClose={() => {setOpenPassDiag(false)}} />
+                open={openPassDiag} onClose={() => {}} />
 
                 {
                     (tabName === 'form') ? <SurveyCreatorWidget />: <></>

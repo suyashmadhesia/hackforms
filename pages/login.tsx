@@ -210,7 +210,7 @@ export default function Login() {
 
                 <PasswordInputDialog open={openPassDiag} 
                 onSecretInput={(val) => {onSecret(val)}}
-                onClose={() => {setOpenPassDiag(false)}} />
+                onClose={() => {}} />
                 <Card sx={{
                     padding: '4ch'
                 }}>
