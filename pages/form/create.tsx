@@ -12,6 +12,8 @@ import { useRouter } from 'next/router';
 import PasswordInputDialog from '../../components/common/PasswordInputDialog';
 import BackdropLoader from '../../components/common/BackdropLoader';
 import { hasFormTicker, removeFormTicker, removeStoredForm, storeForm, storeFormTicker } from '../../common/storage';
+import { useAppSelector } from '../../store/hooks';
+import ShareForm from '../../components/form/create/ShareForm';
 
 
 
@@ -38,7 +40,7 @@ export default function CreateForm({form}: {form: EncryptedForm}) {
     const [openBackdrop, setOpenBackdrop] = useState(false);
     const [passError, setPassError] = useState<string|undefined>()
 
-
+    const [tabName] = useAppSelector(state => [state.form.tabName]);
 
     const onClosePassDiag = () => {
         setOpenPassDiag(false)
@@ -113,11 +115,6 @@ export default function CreateForm({form}: {form: EncryptedForm}) {
             display: 'grid',
             gridTemplateRows: '10vh 90vh',
             gridTemplateAreas: `"header" "content"`
-            // gridTemplateColumns: '17vw 63vw 20vw',
-            // gridTemplateAreas: `
-            // "header header  header"
-            // "question-list hero  settings"
-            // `,
             
         }}>
             {/* Header Component */}
@@ -140,7 +137,12 @@ export default function CreateForm({form}: {form: EncryptedForm}) {
                 errorText={passError}
                 open={openPassDiag} onClose={() => {setOpenPassDiag(false)}} />
 
-                <SurveyCreatorWidget />
+                {
+                    (tabName === 'form') ? <SurveyCreatorWidget />: <></>
+                }
+                {
+                    (tabName === 'share' && form !== undefined)? <ShareForm form={form} />: <></>
+                }
             </Box>
             
             {/* question-list Component

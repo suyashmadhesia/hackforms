@@ -67,7 +67,7 @@ export interface FormState {
 }
 
 const initialState: FormState = {
-    tabName: 'create',
+    tabName: 'form',
     isEditable: false,
     openQuestionSelectionDialog: false,
     openConfirmationDialog: true,
@@ -184,7 +184,7 @@ export const formSlice = createSlice({
         setTabIndex(state, action: PayloadAction<string>) {
             state.tabName = action.payload;
             // Storing the form state
-            setEditableFormStateFromStorage(state);
+            // setEditableFormStateFromStorage(state);
         },
         setAccess(state, action: PayloadAction<string>) {
             state.formParams.access = action.payload;

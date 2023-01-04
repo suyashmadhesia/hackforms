@@ -211,9 +211,18 @@ export default function FormHeader() {
                 aria-label="secondary tabs example"
                 centered
             >
-                <StyledTab value='create' label="Create" />
-                <StyledTab value="share" label="Share" />
-                <StyledTab value="result" label="Result" />
+                <StyledTab value='form' label="Form" />
+                {
+                    (route.query['formId'] === undefined) ? <></>: 
+                        <StyledTab  value="share" label="Share" />
+                     
+                }
+                {
+                    (route.query['formId'] === undefined) ? <></>: 
+                   
+                        <StyledTab value="result" label="Result" />
+
+                }
                 </StyledTabs>
         </Box>
         {/** Confirmation Dialog */}
