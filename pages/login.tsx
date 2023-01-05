@@ -172,7 +172,7 @@ export default function Login() {
                 clientID: "c93734f0-f331-46bb-9bc9-19e0e4fbf2c8",
                 clientSecret: process.env.NEXT_PUBLIC_UD_CLIENT_SECRET,
                 clientAuthMethod: "client_secret_basic",
-                redirectUri: "http://localhost:3000",
+                redirectUri: process.env.NEXT_PUBLIC_REDIRECT_URI as string,
                 scope: "openid wallet"
             })
             const authorization = await uauth.loginWithPopup();
