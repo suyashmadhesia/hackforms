@@ -1,4 +1,4 @@
-import { Box, Table, TableBody, TableContainer, TableHead } from "@mui/material";
+import { Box, Card, Table, TableBody, TableContainer, TableHead } from "@mui/material";
 import { CompactResponseData, EncryptedForm, ResponseData, SerializedFormAnalytics } from "../../../common/types";
 import { colors } from "../../../styles/theme";
 import { useEffect, useState } from "react";
@@ -104,7 +104,13 @@ export default function FormResults(props: {form: EncryptedForm}){
             width: '90vw'
         }}>
         {
-            (cols.length === 0)? <></>:
+            (cols.length === 0)? <Card sx={{
+                width: '100%',
+                height: '6ch',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center'
+            }}>No form response</Card>:
             <TableContainer component={Paper} sx={{
                 // marginX: ''
             }} >

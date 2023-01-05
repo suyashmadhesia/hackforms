@@ -177,6 +177,18 @@ export type FormResponse = {
     access: string
   }
 
+
+  export interface SerializedForm {
+    form: {
+        id: string,
+        title: string;
+        cid: string;
+        isClosed: boolean,
+        createdOn: string,
+        access: string
+    },
+    rawContentUrl: string;
+}
   
 export interface SerializedFormResponse {
     formResponse: Partial<FormResponse>;

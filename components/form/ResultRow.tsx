@@ -7,15 +7,15 @@ import { decryptAES, decryptWithPrivateKey, digestSHA256, importAESKey, loadPubl
 import { colors } from "../../styles/theme";
 import React from "react";
 
-const StyledTableCell = styled((props: TableCellProps) => {
-    return <Tooltip title={props.children} placement="bottom">
+export const StyledTableCell = styled((props: TableCellProps ) => {
+    return <Tooltip title={props.title} placement="bottom">
         <TableCell onClick={props.onClick} size="small" align="left" {...props} />
     </Tooltip>
 })({
-        maxWidth: 100,
+        // maxWidth: 'max-content',
         overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        whiteSpace: 'nowrap',
+        // textOverflow: 'ellipsis',
+        // whiteSpace: 'nowrap',
         borderRight: `1px solid ${colors.tertiary}`
     }
 )

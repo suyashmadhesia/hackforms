@@ -1,9 +1,10 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { SurveyCreatorComponent, SurveyCreator } from "survey-creator-react";
 import { getStoredForm, storeForm } from "../../../common/storage";
 import { useDispatch } from "react-redux";
 import { formActions } from "../../../store/formSlice";
+import BackdropLoader from "../../common/BackdropLoader";
 
 
 
@@ -18,6 +19,8 @@ export default function SurveyCreatorWidget() {
     const creator = new SurveyCreator(creatorOptions);
     creator.text = getStoredForm() || '';
 
+    // const [openBackdrop, setOpenBackdrop] = useState(true);
+
     const dispatch = useDispatch()
 
     creator.saveSurveyFunc = (saveNo: number, callback: (a: number, b: boolean) => void) => {
@@ -30,5 +33,12 @@ export default function SurveyCreatorWidget() {
         
         (document.querySelector('.svc-creator__banner') as HTMLDivElement).style.visibility = 'hidden';
     })
-    return <SurveyCreatorComponent creator={creator as SurveyCreator} />;
+
+    // creator.survey.onAfterRenderSurvey.add((s, o) => {
+    //     setOpenBackdrop(false)
+    // })
+    return <>
+        {/* <BackdropLoader open={openBackdrop} onClose={() => {}} /> */}
+        <SurveyCreatorComponent creator={creator as SurveyCreator} />
+    </>
 }
