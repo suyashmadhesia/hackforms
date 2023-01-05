@@ -7,18 +7,18 @@ import { decryptAES, decryptWithPrivateKey, digestSHA256, importAESKey, loadPubl
 import { colors } from "../../styles/theme";
 import React from "react";
 
-export const StyledTableCell = styled((props: TableCellProps ) => {
-    return <Tooltip title={props.title} placement="bottom">
-        <TableCell onClick={props.onClick} size="small" align="left" {...props} />
-    </Tooltip>
-})({
-        // maxWidth: 'max-content',
-        overflow: 'hidden',
-        // textOverflow: 'ellipsis',
-        // whiteSpace: 'nowrap',
-        borderRight: `1px solid ${colors.tertiary}`
-    }
-)
+// export const StyledTableCell = styled((props: TableCellProps ) => {
+//     // return <Tooltip title={props.title} placement="bottom">
+//         return <TableCell onClick={props.onClick} size="small" align="left" {...props} />
+//     // </Tooltip>
+// })({
+//         // maxWidth: 'max-content',
+//         overflow: 'hidden',
+//         // textOverflow: 'ellipsis',
+//         // whiteSpace: 'nowrap',
+//         borderRight: `1px solid ${colors.tertiary}`
+//     }
+// )
 
 function getSkeletonCells(num: number) {
     const skeletonCells = [];
@@ -79,7 +79,7 @@ export default function ResultRow(props: {res?: CompactResponseData, privateKey?
                 props.privateKey
             )
             .then((resData) => {
-                console.log(resData);
+                // console.log(resData);
                 
                 setRow([props.res?.id as string, props.res?.url as string].concat(Object.values(resData.dataFrame)));
             })
@@ -97,8 +97,14 @@ export default function ResultRow(props: {res?: CompactResponseData, privateKey?
             {
                 row.map((data, index) => {
                     return <Tooltip key={index} title={data} placement="bottom">
-                        <StyledTableCell onClick={(e) => {onCellClick(data)}}>{data}</StyledTableCell>
-                    </Tooltip>
+                                <TableCell sx={{
+                                    // maxWidth: 'max-content',
+                                    overflow: 'hidden',
+                                    // textOverflow: 'ellipsis',
+                                    // whiteSpace: 'nowrap',
+                                    borderRight: `1px solid ${colors.tertiary}`
+                                    }} onClick={(e) => {onCellClick(data)}} size="small" align="left" >{data}</TableCell>
+                            </Tooltip>
                 })
             }
             </>

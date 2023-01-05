@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
-import { GetFormResponse, ResponseData, SerializedForm, SerializedFormResponse } from "../common/types";
+import { GetFormResponse, ResponseData, SerializedForm } from "../common/types";
 import { apiServer } from "../common/axios";
 import Box from '@mui/material/Box';
-import {List, Paper, Table, TableBody, TableHead} from '@mui/material'
+import {List, Paper} from '@mui/material'
 import {GiPlagueDoctorProfile} from 'react-icons/gi'
-import { Avatar, Button, Snackbar, Stack, Tab, TableContainer, TableRow, Tabs, Tooltip, Typography } from "@mui/material";
+import { Avatar, Button, Snackbar, Stack, Tab, Tabs, Tooltip, Typography } from "@mui/material";
 import { getEOA } from "../common/storage";
 import { colors } from "../styles/theme";
 import { useRouter } from "next/router";
-import { StyledTableCell } from "../components/form/ResultRow";
 import { getUrlFromCid } from "../common";
+import Link from "next/link";
 
 
 async function fetchAllMyForms() {
@@ -37,7 +37,10 @@ function FormTableRow(props: {title: string, cid: string, formId: string, access
         router.push(`/form/${props.formId}`)
     }
 
-    return <Paper onClick={() => {handlePaperClick()}} variant="outlined" sx={{
+    return <Link style={{
+        textDecoration: 'none'
+    }} href={`/form/${props.formId}`}>
+    <Paper onClick={() => {handlePaperClick()}} variant="outlined" sx={{
         paddingY: '2ch',
         paddingX: '4ch'
     }} >
@@ -45,12 +48,12 @@ function FormTableRow(props: {title: string, cid: string, formId: string, access
             <Box width={'60%'}>
             <Stack direction='column'>
                 <Typography>{props.title}</Typography>
-                <a style={{
+                {/* <a style={{
                     color: 'black',
                     textDecoration: 'none'
-                }}  href={getUrlFromCid(props.cid)}>
+                }}  href={getUrlFromCid(props.cid)}> */}
                     <Typography variant='caption' >{props.cid}</Typography>
-                </a>
+                {/* </a> */}
             </Stack>
             </Box>
             {
@@ -72,6 +75,7 @@ function FormTableRow(props: {title: string, cid: string, formId: string, access
             }
         </Stack>
     </Paper>
+    </Link>
 }
 
 export default function Dashboard() {

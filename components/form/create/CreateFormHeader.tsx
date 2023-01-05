@@ -10,7 +10,7 @@ import Button from '@mui/material/Button';
 
 import { useAppSelector } from '../../../store/hooks';
 import {formActions, formGetters} from '../../../store/formSlice';
-import {  styled } from '@mui/material';
+import {  IconButton, styled } from '@mui/material';
 import {colors} from '../../../styles/theme';
 import ConfirmationDialog from './ConfirmationDialog';
 import { getStoredForm, hasFormStored, removeStoredForm } from '../../../common/storage';
@@ -20,6 +20,7 @@ import { decryptAES, decryptData, digestSHA256, encryptAES, generateAESKeyFromSe
 import PasswordInputDialog from '../../common/PasswordInputDialog';
 import { apiServer } from '../../../common/axios';
 import { useRouter } from 'next/router';
+import {MdArrowBack} from 'react-icons/md'
 
 export const StyledTabs = styled((props: TabsProps) => (
     <Tabs 
@@ -190,15 +191,15 @@ export default function FormHeader() {
         {/* Breadcrumb for title */}
         <Box sx={{
             display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            paddingLeft: '0.7rem',
+            // flexDirection: 'column',
+            // justifyContent: 'center',
+            // paddingLeft: '0.7rem',
             // gridArea: 'crumbs',
             maxWidth: '100%',
         }}>
-            <Breadcrumbs aria-label="breadcrumb">
-                <p>Workspace</p>
-            </Breadcrumbs>
+            <IconButton onClick={() => {route.back()}}>
+                <MdArrowBack />
+            </IconButton>
         </Box>
 
         {/* Tabs */}

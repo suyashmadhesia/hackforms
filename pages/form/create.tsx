@@ -48,6 +48,7 @@ export default function CreateForm({form}: {form: EncryptedForm}) {
     }
 
     useEffect(() => { 
+        if (!router.isReady) return;
         let pubKey = loadPublicKeyData();
         if (form !== undefined) {
             storeFormTicker(form.payload.meta.formId as string);
@@ -69,7 +70,7 @@ export default function CreateForm({form}: {form: EncryptedForm}) {
             return;
         }
 
-    },[]);
+    },[router.isReady]);
 
 
     const onSecret = async (secret: string) => {

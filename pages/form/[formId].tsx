@@ -4,7 +4,7 @@ import { Survey } from 'survey-react-ui';
 import { fetchFormContentUsingId, fetchResponseContentUsingFormId } from '../../common';
 import { EncryptedData, EncryptedForm, EncryptedFormResponse, ResponseData, SerializedFormResponse } from '../../common/types';
 import { useEffect, useState } from 'react';
-import { Alert, Box, Snackbar } from '@mui/material';
+import { Alert, Box, IconButton, Snackbar } from '@mui/material';
 import BackdropLoader from '../../components/common/BackdropLoader';
 import PasswordInputDialog from '../../components/common/PasswordInputDialog';
 import { decryptAES, decryptData, digestSHA256, encryptAES, encryptWithPublicKey, exportAESKey, generateAESKey, generateAESKeyFromSeed, importAESKey, loadPrivateKeys, loadPublicKeyData } from '../../common/security';
@@ -12,6 +12,9 @@ import { getEOA, getItemFromLocalStorage, removeItemFromLocalStorage, storeItemI
 import { useGetLoginStatus } from '../../common/custom_hooks';
 import { useRouter } from 'next/router';
 import { apiServer } from '../../common/axios';
+import { AxiosError } from 'axios';
+import { MdArrowBack } from 'react-icons/md';
+import Link from 'next/link';
 
 
 interface FormPageInterface {
@@ -45,7 +48,8 @@ export default function FormPage(props: FormPageInterface) {
     const [openBackdrop, setOpenBackdrop] = useState(true);
     const [passError, setPassError] = useState<string|undefined>()
     const [error, setError] = useState<string | null>(null);
-    const [formResponse, setResponse] = useState<EncryptedFormResponse |undefined>()
+    const [formResponse, setResponse] = useState<EncryptedFormResponse |undefined>();
+    const [formResponseRequestCompleted, setFormResponseRequestCompleted] = useState(false);
 
     const STORE_NAME = `res__${props.form.payload.meta.formId}`;
     const isUserLoggedIn = useGetLoginStatus();
@@ -69,9 +73,10 @@ export default function FormPage(props: FormPageInterface) {
         const surveyJson: Record<string, string> = {}
         const surveyWithQuestionTitle: Record<string, string> = {}
         for(const ques of surveyJsonArray) {
-            surveyJson[ques.name] = ques.displayValue;
+            surveyJson[ques.name] = ques.value;
             surveyWithQuestionTitle[ques.title || ques.name] = ques.displayValue;
         }
+  
         return {
             res: surveyJson,
             dataFrame: surveyWithQuestionTitle
@@ -88,25 +93,47 @@ export default function FormPage(props: FormPageInterface) {
     }
 
 
-    const initialSetup = (response?: EncryptedFormResponse) => {
+    const getAlternateSubRecordKey = (pubKey: string) => {
+        return `${pubKey}__form`;
+    }
+
+    const initialSetup = async (response?: EncryptedFormResponse) => {
         const pubKey = loadPublicKeyData();
         if (props.form.header.access !== 'public') {
-            if (props.form.payload.subRecord[pubKey.pubKey] === undefined) {
+            if (props.form.payload.subRecord[pubKey.pubKey] === undefined && props.access === undefined) {
                 setError('You cannot open this form');
                 setOpenBackdrop(false);
             }else {
-                setOpenBackdrop(false);
-                setOpenPassDiag(true);
+                if (props.access !== null && formResponse === undefined) {
+                    await decryptDatAndUpdateState();
+                    if (formResponseRequestCompleted){
+                        setOpenBackdrop(false);
+                    }
+                     
+                }else{
+                    setOpenBackdrop(false);  
+                    setOpenPassDiag(true);
+                }
+                
+                
             }
         }else {
             const model = new Model(JSON.parse(props.form.payload.data));
-            if(response !== undefined) {
-                model.data = JSON.parse(response.payload.data).res
-            }
+            configureSurveyModel(props.form.payload.data, response?.payload.data);
             setSurveyModel(model);
             setError(null);
             setOpenBackdrop(false);
         }
+    }
+
+    const configureSurveyModel = (data: string, response?: string) => {
+        const model = new Model(JSON.parse(props.form.payload.data));
+            if(response !== undefined) {
+                model.data = JSON.parse(response).res
+            }
+            setSurveyModel(model);
+            setError(null);
+            setOpenBackdrop(false);
     }
 
     useEffect(() => {
@@ -126,17 +153,56 @@ export default function FormPage(props: FormPageInterface) {
             .then((res) => {
                 _response = res;  
                 setResponse({..._response});
+                setFormResponseRequestCompleted(true);
                 // initialSetup(_response);
             }).catch((err) => {
-                // initialSetup(_response);
+                setFormResponseRequestCompleted(true);
+                if ((err as AxiosError).response?.status === 404) {
+                    setResponse(undefined);
+                }else{
+                    throw err;
+                }
+                
             })
         }
-        initialSetup(formResponse)
+        initialSetup(formResponse).then(() => {})
         
         return () => {
             clearInterval(timerId);
         }
-    },[router, router.isReady, isUserLoggedIn, formResponse])
+    },[router.isReady, isUserLoggedIn,formResponse, formResponseRequestCompleted]);
+
+
+    const decryptDatAndUpdateState = async (secret?: string) => {
+        try {
+            const pubKey = loadPublicKeyData()
+            // console.log(props.access === null, props.form.payload.subRecord[pubKey.pubKey] === undefined , formResponseRequestCompleted === false, formResponse);
+            
+            if (props.access === null && props.form.payload.subRecord[pubKey.pubKey] === undefined && formResponseRequestCompleted === false){
+                return;
+            }
+            const decryptedFormStr = await decryptFormData(props.form, secret);
+            if (decryptedFormStr === undefined) return;
+            const model = new Model(JSON.parse(decryptedFormStr as string));
+            if (formResponse !== undefined && secret !== undefined) {
+                const decryptedResponseData = await decryptFormData(formResponse, secret, true);
+                if (decryptedResponseData !== undefined){
+                    model.data = JSON.parse(decryptedResponseData).res;
+                }
+            }
+            setSurveyModel(model)
+            if (formResponseRequestCompleted){
+                setOpenBackdrop(false)
+            }
+            
+        }catch(e) {
+            console.log(e);
+            
+            setPassError('Password is not matching');
+            setOpenPassDiag(true)
+            return;
+        }
+    }
 
 
     const onSecret = async (secret: string) => {
@@ -145,25 +211,7 @@ export default function FormPage(props: FormPageInterface) {
         setOpenBackdrop(true);
         // // Check password
         // Decryption happening
-        try {
-            const decryptedFormStr = await decryptFormData(props.form, secret);
-            if (decryptFormData === undefined) return;
-            const model = new Model(JSON.parse(decryptedFormStr as string));
-            if (formResponse !== undefined) {
-                const decryptedResponseData = await decryptFormData(formResponse, secret);
-                if (decryptedResponseData !== undefined){
-                    model.data = JSON.parse(decryptedResponseData).res;
-                }
-            }
-            setSurveyModel(model)
-            setOpenBackdrop(false)
-        }catch(e) {
-            console.log(e);
-            
-            setPassError('Password is not matching');
-            setOpenPassDiag(true)
-            return;
-        }
+        await decryptDatAndUpdateState(secret);
         
         
     }
@@ -178,12 +226,25 @@ export default function FormPage(props: FormPageInterface) {
             props.form.payload.iss,
             aesKeyStr
         )
-        return {
+        
+        const res: {
+            encData: string;
+            aesKeyHash: string;
+            encAESKey: string;
+            formOwnerAESKey: string;
+            
+        } & Record<string, string | undefined> =  {
             encData: encryptedData,
             aesKeyHash: digestSHA256(aesKeyStr),
             encAESKey: encryptedAesKey,
             formOwnerAESKey: encryptedFormCreatorAESKey
         };
+        if (props.access !== null && props.form.payload.subRecord[pubKey.pubKey] === undefined) {
+            res[getAlternateSubRecordKey(pubKey.pubKey)] = await encryptWithPublicKey(pubKey.pubKey, props.access);
+            // console.log(digestSHA256(props.access), props.form);
+            
+        }
+        return res;
     }
 
     const getFormattedFormResponse = async (): Promise<EncryptedFormResponse | undefined> => {
@@ -199,6 +260,9 @@ export default function FormPage(props: FormPageInterface) {
         const subRecord = {
             [pubKey.pubKey]: encDetails.encAESKey,
             [props.form.payload.iss]: encDetails.formOwnerAESKey
+        }
+        if( props.access !== null && props.form.payload.subRecord[pubKey.pubKey] === undefined ) {
+            subRecord[getAlternateSubRecordKey(pubKey.pubKey)] = encDetails[getAlternateSubRecordKey(pubKey.pubKey)] as string;
         }
         
         const encryptedFormResponse: EncryptedFormResponse = {
@@ -235,6 +299,7 @@ export default function FormPage(props: FormPageInterface) {
         const data = {
             formResponse: formattedForm
         }
+        // return;
         const res = await apiServer.post<ResponseData<SerializedFormResponse>>('/response', data);
  
         if (res.data.err) {
@@ -247,22 +312,34 @@ export default function FormPage(props: FormPageInterface) {
         router.reload();
     }
 
-    const decryptFormData = async (schema: EncryptedData<any>, secret: string) => {
+    const getKeyFromSubRecord = (schema: EncryptedData<any>, pubKey: string): string | undefined => {
+        if (props.form.proof.hash === schema.proof.hash && schema.payload.subRecord[pubKey] === undefined 
+            && formResponse !== undefined && formResponse.payload.subRecord[getAlternateSubRecordKey(pubKey)] !== undefined  ){
+                return formResponse.payload.subRecord[getAlternateSubRecordKey(pubKey)]
+        }
+        return schema.payload.subRecord[pubKey];
+    }
+
+    const decryptFormData = async (schema: EncryptedData<any>, secret?: string, ignoreAccess: boolean = false) => {
         const pubKey = loadPublicKeyData();
-        if (schema.payload.subRecord[pubKey.pubKey] === undefined && props.access === null) {
+        // const alternateKeyName = getAlternateSubRecordKey(pubKey.pubKey)
+        const key = getKeyFromSubRecord(schema, pubKey.pubKey);
+        // const isSchemaOfForm = props.form.proof.hash === schema.proof.hash;
+        
+        if (key === undefined && props.access === null) {
             setOpenBackdrop(false);
             setError('You cannot view the data');
             return;
         }
         // Access key will bypass this
-        const decryptedAesKeyStr = props.access || await decryptData(schema.payload.subRecord[pubKey.pubKey] ,secret);
-        if (digestSHA256(decryptedAesKeyStr) !== schema.proof.keyHash) {
+        const decryptedAesKeyStr = (props.access && !ignoreAccess)? props.access: await decryptData(key as string ,secret as string);
+        
+        if (digestSHA256(decryptedAesKeyStr) !== schema.proof.keyHash) { 
             setPassError('Password is not matching');
             setOpenPassDiag(true)
             return;
         }
-        const decryptedDataStr = await decryptAES(schema.payload.data, await importAESKey(decryptedAesKeyStr));
- 
+        const decryptedDataStr = await decryptAES(schema.payload.data, await importAESKey(decryptedAesKeyStr));   
         if (digestSHA256(decryptedDataStr) !== schema.proof.hash) {
             setPassError('Password is not matching form content');
             setOpenPassDiag(true)
@@ -306,14 +383,25 @@ export default function FormPage(props: FormPageInterface) {
 
     return <Box sx= {{
         width: '100vw',
-        height: '100vh',       
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column'       
     }}>
+        <Box sx={{
+            width: '100%',
+            paddingLeft: '2ch',
+            paddingTop: '1ch'
+        }} >
+            <IconButton onClick={() =>{router.back()}}>
+                <MdArrowBack />
+            </IconButton>
+        </Box>
         <BackdropLoader open={openBackdrop}
                 onClose={() => {setOpenBackdrop(false)}}
         />
 
         <PasswordInputDialog 
-                onSecretInput={onSecret}
+                onSecretInput={(s) => {onSecret(s)}}
                 errorText={passError}
                 open={openPassDiag} onClose={()=>{}} />
         <Snackbar open={error !== null} autoHideDuration={6000} onClose={() => {setError(null)}}>
