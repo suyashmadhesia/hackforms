@@ -79,8 +79,6 @@ export default function ResultRow(props: {res?: CompactResponseData, privateKey?
                 props.privateKey
             )
             .then((resData) => {
-                // console.log(resData);
-                
                 setRow([props.res?.id as string, props.res?.url as string].concat(Object.values(resData.dataFrame)));
             })
             

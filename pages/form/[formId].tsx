@@ -299,7 +299,6 @@ export default function FormPage(props: FormPageInterface) {
         const data = {
             formResponse: formattedForm
         }
-        // return;
         const res = await apiServer.post<ResponseData<SerializedFormResponse>>('/response', data);
  
         if (res.data.err) {

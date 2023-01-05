@@ -49,7 +49,7 @@ export default function FormResults(props: {form: EncryptedForm}){
             )
             
             const cols: string[] = ['responseId', 'IPFS URL']
-            const rowData: string[] = [firstResponse.id, firstResponse.url]
+            const rowData: string[] = [firstResponse.id, firstResponse.url];
             Object.entries(firstResponseData.dataFrame).map(([title, value]) => {
                 cols.push(title);
                 rowData.push(value);
