@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+           import { useEffect, useState } from "react";
 import { GetFormResponse, ResponseData, SerializedForm } from "../common/types";
 import { apiServer } from "../common/axios";
 import Box from '@mui/material/Box';
@@ -10,6 +10,7 @@ import { colors } from "../styles/theme";
 import { useRouter } from "next/router";
 import { getUrlFromCid } from "../common";
 import Link from "next/link";
+import DashboardInfoBar from "./DashboardInfoBar";
 
 
 async function fetchAllMyForms() {
@@ -31,9 +32,7 @@ function FormTableRow(props: {title: string, cid: string, formId: string, access
 
     const router = useRouter()
 
-    const handlePaperClick = () => {
-        console.log('work');
-        
+    const handlePaperClick = () => { 
         router.push(`/form/${props.formId}`)
     }
 
@@ -48,12 +47,7 @@ function FormTableRow(props: {title: string, cid: string, formId: string, access
             <Box width={'60%'}>
             <Stack direction='column'>
                 <Typography>{props.title}</Typography>
-                {/* <a style={{
-                    color: 'black',
-                    textDecoration: 'none'
-                }}  href={getUrlFromCid(props.cid)}> */}
                     <Typography variant='caption' >{props.cid}</Typography>
-                {/* </a> */}
             </Stack>
             </Box>
             {
@@ -123,7 +117,6 @@ export default function Dashboard() {
         width: '100vw',
         height: '100vh',
         overflow: 'hidden',
-        
         paddingTop: '2ch'
     }}>
         <Box sx={{
@@ -145,7 +138,7 @@ export default function Dashboard() {
             </Box>
             <Tabs  value={tabIndex} onChange={(e,index) => {setTabIndex(index)}} centered>
                 <Tab label="My forms" />
-                <Tab label="My responses" />
+                <Tab label="Responses" />
             </Tabs>
             <Box sx={{
                 marginRight: '15ch'
@@ -155,9 +148,23 @@ export default function Dashboard() {
                 }} variant='contained' >Create Form</Button>
             </Box>
         </Box>
-
+        
         <Box sx={{
             width: '100vw',
+            height: '90vh',
+            display: 'flex',
+            flexDirection: 'row'
+        }}>
+        <Box sx={{
+            width: '20vw',
+            height: '90vh',
+            backgroundColor: 'white',
+            
+        }}>
+            <DashboardInfoBar />
+        </Box>
+        <Box sx={{
+            width: '80vw',
             height: '90vh',
             paddingX: '4ch',
             overflowY: 'scroll',
@@ -165,7 +172,7 @@ export default function Dashboard() {
         }}>
 
             <Box sx={{
-                width: '80vw',
+                width: '75vw',
                 height: 'auto',
                 marginTop: '4ch'
 
@@ -196,6 +203,7 @@ export default function Dashboard() {
                 </List>
                 }
             </Box>
+        </Box>
         </Box>
         <Snackbar
             open={openSnackbar !== undefined}

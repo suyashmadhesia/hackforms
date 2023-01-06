@@ -21,6 +21,11 @@ contract HackformsEscrow {
         bool doesExists;
     }
 
+    struct DealRecepient {
+        bool doesExists;
+        address[] recps;
+    }
+
     event HackformsDealCreated(address indexed _from, string indexed formId, uint256 timestamp);
     event Deposit(address indexed _from, string indexed formId, uint256 amount, uint256 timestamp);
     event PaymentDisbursed(address indexed to, string indexed formId, uint256 amount, uint256 timestamp);

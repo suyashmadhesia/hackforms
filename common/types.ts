@@ -95,7 +95,8 @@ export interface EncryptedData<T> {
         iss: string;
         owner: string;
         subRecord: Record<string, string>;
-        inviteList: string[]
+        inviteList: string[],
+        payableWallet?: string;
     },
     proof: {
         hash: string;

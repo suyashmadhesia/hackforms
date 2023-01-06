@@ -37,7 +37,8 @@ export function getCoinbaseProvider(): ethers.providers.JsonRpcProvider {
         {
             url: process.env.NEXT_PUBLIC_COINBASE_RPC_URL as string,
             user: process.env.NEXT_PUBLIC_COINBASE_USERNAME as string,
-            password: process.env.NEXT_PUBLIC_COINBASE_PASSWORD
+            password: process.env.NEXT_PUBLIC_COINBASE_PASSWORD,
+            throttleLimit: 20,
         }
     )
     
@@ -117,9 +118,9 @@ export async function fundDeal(contract: HackformsEscrow, data: {
 
 export async function hasEnoughBalance(contract: HackformsEscrow, data: {
     formId: string,
-    amount: string
+    amount: ethers.BigNumber
 }) {
-    return await contract.hasEnoughBalance(data.formId, parseToBigNumber(data.amount))
+    return await contract.hasEnoughBalance(data.formId, data.amount)
 }
 
 
@@ -150,8 +151,8 @@ export class HackformsEscrowContractHandler {
         return getBalanceOfDeal(this.contract, formId);
     }
 
-    async balance() {
-        return getBalanceOfAddress(this.contract);
+    async balance(signer: ethers.Signer) {
+        return getBalanceOfAddress(this.contract.connect(signer));
     }
 
     async disburseFund(formId: string, rate: number, recps: string[], signer: ethers.Signer) {
@@ -173,10 +174,10 @@ export class HackformsEscrowContractHandler {
         return await this.contract.signer.getAddress()
     }
 
-    async hashEnoughBalance(formId: string, amount: number) {
+    async hashEnoughBalance(formId: string, amount: ethers.BigNumber) {
         return await hasEnoughBalance(this.contract, {
             formId,
-            amount: amount.toString()
+            amount
         })
     }
 

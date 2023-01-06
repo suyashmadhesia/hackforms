@@ -9,12 +9,15 @@ import BackdropLoader from '../../components/common/BackdropLoader';
 import PasswordInputDialog from '../../components/common/PasswordInputDialog';
 import { decryptAES, decryptData, digestSHA256, encryptAES, encryptWithPublicKey, exportAESKey, generateAESKey, generateAESKeyFromSeed, importAESKey, loadPrivateKeys, loadPublicKeyData } from '../../common/security';
 import { getEOA, getItemFromLocalStorage, removeItemFromLocalStorage, storeItemInLocalStorage } from '../../common/storage';
-import { useGetLoginStatus } from '../../common/custom_hooks';
+import { useEscrowContract, useGetLoginStatus } from '../../common/custom_hooks';
 import { useRouter } from 'next/router';
 import { apiServer } from '../../common/axios';
 import { AxiosError } from 'axios';
 import { MdArrowBack } from 'react-icons/md';
 import Link from 'next/link';
+import { useAccount } from 'wagmi';
+import { HackformsEscrowContractHandler, parseToBigNumber } from '../../common/contract';
+import { useWeb3Modal } from '@web3modal/react';
 
 
 interface FormPageInterface {
@@ -40,6 +43,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
 var timerId = 0;
 var isCreateFormResponseLocked = false
+var hasMadeContractRequest = false;
+
+const escrowContract = new HackformsEscrowContractHandler();
 
 export default function FormPage(props: FormPageInterface) {
 
@@ -50,6 +56,9 @@ export default function FormPage(props: FormPageInterface) {
     const [error, setError] = useState<string | null>(null);
     const [formResponse, setResponse] = useState<EncryptedFormResponse |undefined>();
     const [formResponseRequestCompleted, setFormResponseRequestCompleted] = useState(false);
+    const [enquiryCompleted, setEnquiryCompleted] = useState(false);
+    const [isPayable, setIsPayable] = useState(false);
+    const [isOnline, setIsOnline] = useState(!props.form.payload.meta.isClosed);
 
     const STORE_NAME = `res__${props.form.payload.meta.formId}`;
     const isUserLoggedIn = useGetLoginStatus();
@@ -66,6 +75,9 @@ export default function FormPage(props: FormPageInterface) {
         }
         return JSON.parse(formResponse).res;
     }
+
+   
+
 
 
     const getSurveyResponse = () => {
@@ -98,6 +110,9 @@ export default function FormPage(props: FormPageInterface) {
     }
 
     const initialSetup = async (response?: EncryptedFormResponse) => {
+
+        if (!enquiryCompleted || !isOnline) return;
+        // console.log('Crossed');
         const pubKey = loadPublicKeyData();
         if (props.form.header.access !== 'public') {
             if (props.form.payload.subRecord[pubKey.pubKey] === undefined && props.access === undefined) {
@@ -136,9 +151,50 @@ export default function FormPage(props: FormPageInterface) {
             setOpenBackdrop(false);
     }
 
+ 
+    const {isConnected, address} = useAccount();
+
+    const openWeb3Modal = useWeb3Modal().open
+
+    const checkContractConstraint = async () => {
+        if(props.form.payload.meta.rate !== undefined &&
+            (props.form.payload.meta.rate as number) > 0 &&
+            !enquiryCompleted && !hasMadeContractRequest
+            ) {
+                hasMadeContractRequest = true;
+                const formId = props.form.payload.meta.formId as string
+                
+                const hasDeal = await escrowContract.hasDeal(formId);
+                // console.log('hasDeal ', hasDeal);
+                
+                setIsPayable(hasDeal)
+                if (!hasDeal) {
+                    setIsPayable(false);
+                }else {
+                    // console.log('isConnected ', isConnected, );
+                    await checkBalanceConstraint();
+                   
+                }
+        }
+        setEnquiryCompleted(true);
+        
+        
+    }
+
+    const checkBalanceConstraint = async () => {
+        const formId = props.form.payload.meta.formId as string;
+        const amount = parseToBigNumber((props.form.payload.meta.rate as number).toString());
+        const hasEnoughBalance = await escrowContract.hashEnoughBalance(formId, amount);
+        if (!(hasEnoughBalance && !props.form.payload.meta.isClosed)) {
+            setOpenBackdrop(false);
+            setOpenPassDiag(false)
+            setError((hasEnoughBalance) ? 'Form is not accepting response': 'Form does not have enough balance to reward you');
+        }
+        setEnquiryCompleted(true);
+    }
+
+
     useEffect(() => {
-
-
         if (!router.isReady) return; 
         const eoa = getEOA();
         if (eoa === null) {
@@ -148,15 +204,17 @@ export default function FormPage(props: FormPageInterface) {
             router.replace(`/form/create?formId=${props.form.payload.meta.formId as string}`)
         }
         let _response: EncryptedFormResponse;
-        if (formResponse === undefined) {
+        if (formResponse === undefined && !formResponseRequestCompleted) {
             fetchResponseContentUsingFormId(router.query['formId'] as string)
             .then((res) => {
                 _response = res;  
                 setResponse({..._response});
                 setFormResponseRequestCompleted(true);
+                checkContractConstraint();
                 // initialSetup(_response);
             }).catch((err) => {
                 setFormResponseRequestCompleted(true);
+                checkContractConstraint()
                 if ((err as AxiosError).response?.status === 404) {
                     setResponse(undefined);
                 }else{
@@ -165,12 +223,23 @@ export default function FormPage(props: FormPageInterface) {
                 
             })
         }
-        initialSetup(formResponse).then(() => {})
+        // console.log(isConnected, isPayable);
+        if(isPayable && !isConnected) {
+            setSurveyModel(null)
+            openWeb3Modal({
+                route: "ConnectWallet"
+            })
+        }else{
+            initialSetup(formResponse).then(() => {}).catch(err => {setError(err.message)});
+        }
+        
+        
         
         return () => {
             clearInterval(timerId);
         }
-    },[router.isReady, isUserLoggedIn,formResponse, formResponseRequestCompleted]);
+    },[router.isReady, isUserLoggedIn,formResponse, enquiryCompleted,
+        formResponseRequestCompleted, isConnected, isPayable]);
 
 
     const decryptDatAndUpdateState = async (secret?: string) => {
@@ -280,6 +349,7 @@ export default function FormPage(props: FormPageInterface) {
                 iss: pubKey.pubKey,
                 owner: getEOA() as string,
                 subRecord: subRecord,
+                payableWallet: address,
                 inviteList: [
                     getEOA() as string,
                     props.form.payload.owner
@@ -299,6 +369,8 @@ export default function FormPage(props: FormPageInterface) {
         const data = {
             formResponse: formattedForm
         }
+        // console.log(data);
+        
         const res = await apiServer.post<ResponseData<SerializedFormResponse>>('/response', data);
  
         if (res.data.err) {
@@ -371,7 +443,7 @@ export default function FormPage(props: FormPageInterface) {
         });
         surveyModel.onComplete.add((survey, option) => {
             clearInterval(timerId);
-            if (!isCreateFormResponseLocked) {
+          if (!isCreateFormResponseLocked) {
                 isCreateFormResponseLocked = true
                 createResponse().then();
             }
