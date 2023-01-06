@@ -37,11 +37,11 @@ function getSkeletonCells(num: number) {
 
 
 
-export async function decryptResponseData(res: CompactResponseData, pubKey: string, privateKey?: string) {
+export async function decryptResponseData(res: CompactResponseData, pubKey: string, privateKey?: string): Promise<[FormResponseData, EncryptedFormResponse]> {
     const encFormResponse = (await axios.get<EncryptedFormResponse>(res.url)).data;
     if (encFormResponse.header.access === "public"){
         const resData = JSON.parse(encFormResponse.payload.data) as FormResponseData
-        return resData;
+        return [resData, encFormResponse];
     }
     // if (encFormResponse.payload.subRecord[pubKey])
     const contentDecryptionKey = await decryptWithPrivateKey(
@@ -57,12 +57,14 @@ export async function decryptResponseData(res: CompactResponseData, pubKey: stri
         encFormResponse.payload.data,
         await importAESKey(contentDecryptionKey)
     );
-    return JSON.parse(decryptedContentString) as FormResponseData;
+    return [JSON.parse(decryptedContentString) as FormResponseData, encFormResponse];
 
 
 }
 
-export default function ResultRow(props: {res?: CompactResponseData, privateKey?: string, numOfCols?: number, row?: string[]}) {
+export default function ResultRow(props: {res?: CompactResponseData, privateKey?: string, 
+    addAddress?: (address: string) => void,
+    numOfCols?: number, row?: string[]}) {
     const [row, setRow] = useState<string[] | null>(null)
     const [snackbarData, setSnackBarData] = useState<string | undefined>(undefined);
     
@@ -73,14 +75,19 @@ export default function ResultRow(props: {res?: CompactResponseData, privateKey?
                 return;
             }
             const pubKey = loadPublicKeyData()
-            decryptResponseData(
-                props.res as CompactResponseData,
-                pubKey.pubKey,
-                props.privateKey
-            )
-            .then((resData) => {
-                setRow([props.res?.id as string, props.res?.url as string].concat(Object.values(resData.dataFrame)));
-            })
+            if(row === null) {
+                decryptResponseData(
+                    props.res as CompactResponseData,
+                    pubKey.pubKey,
+                    props.privateKey
+                )
+                .then((resData) => {
+                    if(props.addAddress !== undefined && resData[1].payload.payableWallet !== undefined ) {
+                        props.addAddress(resData[1].payload.payableWallet);
+                    }
+                    setRow([props.res?.id as string, props.res?.url as string, resData[1].payload.payableWallet || 'Not available'].concat(Object.values(resData[0].dataFrame)));
+                })
+            }
             
         }
     }, [])
@@ -95,7 +102,7 @@ export default function ResultRow(props: {res?: CompactResponseData, privateKey?
             {
                 row.map((data, index) => {
                     return <Tooltip key={index} title={data} placement="bottom">
-                                <TableCell sx={{
+                                <TableCell  sx={{
                                     // maxWidth: 'max-content',
                                     overflow: 'hidden',
                                     // textOverflow: 'ellipsis',

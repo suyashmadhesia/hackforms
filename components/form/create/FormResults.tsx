@@ -9,6 +9,7 @@ import { decryptAES, generateAESKeyFromSeed, loadPrivateKeys, loadPublicKeyData 
 
 import Paper from '@mui/material/Paper';
 import ResultRow, { decryptResponseData } from "../ResultRow";
+import PaymentDisburse from "../PaymentDisburse";
 
 
 export default function FormResults(props: {form: EncryptedForm}){
@@ -21,6 +22,14 @@ export default function FormResults(props: {form: EncryptedForm}){
     const [rows, setRows] = useState<CompactResponseData[]>([]);
     const [firstRow, setFirstRow] = useState<string[]>([]);
     const [numOfRes, setNumOfRes] = useState(0);
+
+    const [addressList, setAddressList] = useState<string[]>([]);
+
+    const addAddress = (address: string) => { 
+        if(!addressList.includes(address)){
+            setAddressList(addressList.concat(address))
+        }
+    }
 
 
     const fetchResponsesAndTheirContents = async (secret?: string) => {
@@ -47,10 +56,15 @@ export default function FormResults(props: {form: EncryptedForm}){
                 pubKey.pubKey,
                 privateKey || undefined
             )
+
+
             
-            const cols: string[] = ['responseId', 'IPFS URL']
-            const rowData: string[] = [firstResponse.id, firstResponse.url];
-            Object.entries(firstResponseData.dataFrame).map(([title, value]) => {
+            const cols: string[] = ['responseId', 'IPFS URL', 'Wallet Address']
+            const rowData: string[] = [firstResponse.id, firstResponse.url, firstResponseData[1].payload.payableWallet || 'Not available'];
+            if(firstResponseData[1].payload.payableWallet !== undefined) {
+                addAddress(firstResponseData[1].payload.payableWallet)
+            }
+            Object.entries(firstResponseData[0].dataFrame).map(([title, value]) => {
                 cols.push(title);
                 rowData.push(value);
             });
@@ -101,8 +115,12 @@ export default function FormResults(props: {form: EncryptedForm}){
 
         <Box sx={{
             height: '90vh',
-            width: '90vw'
+            width: '90vw',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems:'center'
         }}>
+        <PaymentDisburse form={props.form} addressList={addressList} />
         {
             (cols.length === 0)? <Card sx={{
                 width: '100%',
@@ -122,7 +140,7 @@ export default function FormResults(props: {form: EncryptedForm}){
                        <ResultRow row={firstRow} />
                        {
                         rows.map((row) => {
-                            return <ResultRow key={row.id} res={row} privateKey={privateKey as string}  />
+                            return <ResultRow addAddress={(s) => {addAddress(s)}} key={row.id} res={row} privateKey={privateKey as string}  />
                         })
                        }
                     </TableBody>

@@ -100,10 +100,10 @@ export async function getBalanceOfAddress(contract: HackformsEscrow) {
 
 export async function disburseFund(contract: HackformsEscrow, data: {
     formId: string;
-    rate: string;
+    rate: ethers.BigNumber;
     recps: string[]
 }) {
-    return await contract.disburseFund(data.formId, parseToBigNumber(data.rate), data.recps);
+    return await contract.disburseFund(data.formId, data.rate, data.recps);
 }
 
 
@@ -155,10 +155,10 @@ export class HackformsEscrowContractHandler {
         return getBalanceOfAddress(this.contract.connect(signer));
     }
 
-    async disburseFund(formId: string, rate: number, recps: string[], signer: ethers.Signer) {
+    async disburseFund(formId: string, rate: ethers.BigNumber, recps: string[], signer: ethers.Signer) {
         return await disburseFund(this.contract.connect(signer), {
             formId,
-            rate: rate.toString(),
+            rate,
             recps
         });
     }

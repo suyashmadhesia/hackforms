@@ -36,6 +36,7 @@ export default function FormDeal(props: {form: EncryptedForm}) {
     const [snackDetail, setSnackDetail] = useState<[AlertColor, string]>(['info', 'Working'])
     const [openBackdrop, setOpenBackdrop] = useState(false);
 
+
     const signer = (useSigner()).data;
 
 
@@ -84,7 +85,6 @@ export default function FormDeal(props: {form: EncryptedForm}) {
                 console.log(res);
                 
                 const recp = await res.wait();
-                console.log(recp);
                 await fetchDealData()
                 setPaymentAmount('')
                 setOpenBackdrop(false);
