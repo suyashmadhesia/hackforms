@@ -149,33 +149,7 @@ export default function CreateForm({form}: {form: EncryptedForm}) {
                     (tabName === 'result' && form !== undefined)? <FormResults form={form} /> : <></>
                 }
             </Box>
-            
-            {/* question-list Component
-            <Box component="div" sx={{
-                gridArea: "question-list",
-                borderTop: '1px solid #E2E3E2',
-                borderRight: '1px solid #E2E3E2',
-                
-            }}>
-                <CreateFormQuestionList />
-            </Box> */}
-            {/* Hero Component
-            <Box component="div" sx={{
-                gridArea: "hero",
-                borderTop: '1px solid #E2E3E2',
-                backgroundColor: colors.tertiary
-            }}>
-                <CreateFormHero />
-            </Box> */}
-            {/* Settings Component
-            <Box component="div" sx={{
-                gridArea: "settings",
-                width: '20vw',
-                borderTop: '1px solid #E2E3E2',
-                borderLeft: '1px solid #E2E3E2'
-            }}>
-                <CreateFormSettings />
-            </Box> */}
+        
 
 
         </Box>

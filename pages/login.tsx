@@ -16,7 +16,7 @@ import { LoginArgs, LoginResponse } from "../common/types";
 import { fetchUserEOAExistence, loginUser } from "../common/api";
 import { getItemFromLocalStorage, removeAuthCode, removeItemFromLocalStorage, setAuthCode, storeItemInLocalStorage } from "../common/storage";
 import PasswordInputDialog from "../components/common/PasswordInputDialog";
-import { clearKeyStore, createKeyPair, encryptAES, generateAESKeyFromSeed, getAddressFromPubKey, importAESKey, storePrivateKey, storePublicKeyData } from "../common/security";
+import { clearKeyStore, createKeyPair, encryptAES, generateAESKeyFromSeed, getAddressFromPubKey, importAESKey, removeAuthDetails, storePrivateKey, storePublicKeyData } from "../common/security";
 
 /**
  * 
@@ -58,7 +58,7 @@ export default function Login() {
                 router.replace('/dashboard')
             }
         }else {
-            removeAuthCode();
+            removeAuthDetails()
         }
     },[loginStatus, router.isReady, router])
 

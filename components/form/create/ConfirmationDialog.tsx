@@ -5,11 +5,9 @@ import { formActions } from "../../../store/formSlice";
 import { useState } from "react";
 import { colors } from "../../../styles/theme";
 import PasswordInputDialog from "../../common/PasswordInputDialog";
-import { decryptAES, decryptData, digestSHA256, encryptWithPublicKey, exportAESKey, generateAESKey, generateAESKeyFromSeed, getPublicKeyFromPrivKey, importAESKey, loadPrivateKeys, loadPublicKeyData } from "../../../common/security";
+import { digestSHA256, encryptWithPublicKey, exportAESKey, generateAESKey, loadPublicKeyData } from "../../../common/security";
 import { getFormattedDateString } from "../../../common";
-import dayjs, { Dayjs } from 'dayjs';
-
-
+import dayjs from 'dayjs';
 
 function Configurations(props: {index: number, onNext: (index: number) => void}) {
 
@@ -149,7 +147,7 @@ function Configurations(props: {index: number, onNext: (index: number) => void})
 }
 
 
-function Reward(props: {index: number, onNext: (index: number) => void}) {
+function Reward(props: {index: number, onNext: (index: number) => void, onClose: () => void}) {
 
     const [rate, maxNumberOfResponse] = useAppSelector(state => [state.form.formParams.rate, state.form.formParams.maxNumberOfResponse]);
 
@@ -177,6 +175,18 @@ function Reward(props: {index: number, onNext: (index: number) => void}) {
     const onContinueClick = () => {
         // TODO: Implement logic to connect wallet, deposit in escrow
         props.onNext(props.index)
+    } 
+
+    const getButton = () => {
+        return <Button variant='contained' size='large'  disableElevation
+        style={{
+            width: '100%',
+            backgroundColor: colors.primary,
+            marginTop: '2ch'
+        }}
+        onClick={() => {onContinueClick()}}
+
+    >Continue</Button>
     }
 
     return <Stack direction={'column'} spacing={2}>
@@ -187,25 +197,19 @@ function Reward(props: {index: number, onNext: (index: number) => void}) {
         fullWidth required label='Rate' type='number' variant="outlined"></TextField>
     </FormControl>
 
-    <FormControl>
+    {/* <FormControl>
         <label>Max. number of response</label>
         <TextField value={maxNumberOfResponse} onChange={(e) => {numberOfResponseHandler(e.target.value)}} 
         fullWidth required label='Number of Response' type='number' variant="outlined"></TextField>
-    </FormControl>
+    </FormControl> */}
 
     <Typography textAlign={'center'} variant='h6' >
         {getTotalAmount()}
     </Typography>
 
-    <Button variant='contained' size='large'  disableElevation
-            style={{
-                width: '100%',
-                backgroundColor: colors.primary,
-                marginTop: '2ch'
-            }}
-            onClick={() => {onContinueClick()}}
-
-        >Continue</Button>
+        {
+            getButton()
+        }
 </Stack>
 }
 
@@ -227,8 +231,10 @@ export default function ConfirmationDialog(props: {
     }
 
     const onCloseHandler = () => {
-        props.onClose()
+        props.onClose();
     }
+
+  
     return <Dialog open={props.openConfirmationDialog} onClose={onCloseHandler}>
         <DialogTitle marginBottom={'2ch'}>
             <Stepper activeStep={step} alternativeLabel>
@@ -254,7 +260,7 @@ export default function ConfirmationDialog(props: {
               (step === 0)? <Configurations index={0} onNext={onNext} />: <></>
             }
             {
-              (step === 1)? <Reward index={1} onNext={onNext} />: <></>
+              (step === 1)? <Reward onClose={() => {onCloseHandler()}} index={1} onNext={onNext} />: <></>
             }
             {/** TODO: Need to add Share and processing */}
         </DialogContent>

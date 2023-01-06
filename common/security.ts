@@ -1,6 +1,6 @@
 import * as cryptojs from 'crypto-js';
 import EthCrypto from 'eth-crypto';
-import { getItemFromLocalStorage, removeItemFromLocalStorage, storeItemInLocalStorage } from './storage';
+import { getItemFromLocalStorage, removeAuthCode, removeItemFromLocalStorage, storeItemInLocalStorage } from './storage';
 
 
 import { Web3Storage } from 'web3.storage'
@@ -250,3 +250,11 @@ export function getPublicKeyFromPrivKey(privKey: string) {
 }
 
 
+
+export function removeAuthDetails() {
+    removeAuthCode();
+    removeItemFromLocalStorage('eoa');
+    removeItemFromLocalStorage(KEYSTORE_NAME);
+    removeItemFromLocalStorage(VERIFIER)
+    removeItemFromLocalStorage(PUBLIC_DETAILS)
+}
