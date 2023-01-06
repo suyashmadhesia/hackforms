@@ -6,7 +6,10 @@
     "dev": "cross-env NODE_OPTIONS='--inspect' next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "contract:compile": "node compile.js",
+    "contract:gen": "typechain --target ethers-v5 --out-dir build/contracts './build/*.json'",
+    "contract:deploy": "node deploy.js HackformsEscrow && yarn run contract:gen "
   },
   "dependencies": {
     "@emotion/react": "^11.10.5",

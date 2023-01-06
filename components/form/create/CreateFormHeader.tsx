@@ -222,6 +222,12 @@ export default function FormHeader() {
                         <StyledTab value="result" label="Result" />
 
                 }
+                {
+                    (route.query['formId'] === undefined) ? undefined: 
+                   
+                        <StyledTab value="deal" label="Deal" />
+
+                }
                 </StyledTabs>
         </Box>
         {/** Confirmation Dialog */}

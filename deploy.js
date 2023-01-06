@@ -8,9 +8,9 @@ dotenv.config()
 // dotenv.config({path: './.env.local'});
 
 const provider = new ethers.providers.JsonRpcProvider({
-    url: process.env.COINBASE_RPC_URL,
-    user: process.env.COINBASE_USERNAME,
-    password: process.env.COINBASE_PASSWORD
+    url: process.env.NEXT_PUBLIC_COINBASE_RPC_URL,
+    user: process.env.NEXT_PUBLIC_COINBASE_USERNAME,
+    password: process.env.NEXT_PUBLIC_COINBASE_PASSWORD
 })
 
 const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);

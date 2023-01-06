@@ -15,6 +15,7 @@ import { hasFormTicker, removeFormTicker, removeStoredForm, storeForm, storeForm
 import { useAppSelector } from '../../store/hooks';
 import ShareForm from '../../components/form/create/ShareForm';
 import FormResults from '../../components/form/create/FormResults';
+import FormDeal from '../../components/form/create/FormDeal';
 
 
 
@@ -147,6 +148,9 @@ export default function CreateForm({form}: {form: EncryptedForm}) {
                 }
                 {
                     (tabName === 'result' && form !== undefined)? <FormResults form={form} /> : <></>
+                }
+                {
+                    (tabName === 'deal' && form !== undefined)? <FormDeal form={form} /> : <></>
                 }
             </Box>
         

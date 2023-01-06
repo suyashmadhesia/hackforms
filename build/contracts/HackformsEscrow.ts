@@ -33,6 +33,7 @@ export interface HackformsEscrowInterface extends utils.Interface {
     "balanceOfDeal(string)": FunctionFragment;
     "disburseFund(string,uint256,address[])": FunctionFragment;
     "fundDeal(string)": FunctionFragment;
+    "hasDeal(string)": FunctionFragment;
     "hasEnoughBalance(string,uint256)": FunctionFragment;
   };
 
@@ -42,6 +43,7 @@ export interface HackformsEscrowInterface extends utils.Interface {
       | "balanceOfDeal"
       | "disburseFund"
       | "fundDeal"
+      | "hasDeal"
       | "hasEnoughBalance"
   ): FunctionFragment;
 
@@ -63,6 +65,10 @@ export interface HackformsEscrowInterface extends utils.Interface {
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
+    functionFragment: "hasDeal",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "hasEnoughBalance",
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
@@ -77,6 +83,7 @@ export interface HackformsEscrowInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "fundDeal", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "hasDeal", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "hasEnoughBalance",
     data: BytesLike
@@ -179,6 +186,11 @@ export interface HackformsEscrow extends BaseContract {
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    hasDeal(
+      formId: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
     hasEnoughBalance(
       formId: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
@@ -205,6 +217,11 @@ export interface HackformsEscrow extends BaseContract {
     overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  hasDeal(
+    formId: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
   hasEnoughBalance(
     formId: PromiseOrValue<string>,
     amount: PromiseOrValue<BigNumberish>,
@@ -227,6 +244,11 @@ export interface HackformsEscrow extends BaseContract {
     ): Promise<boolean>;
 
     fundDeal(
+      formId: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    hasDeal(
       formId: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<boolean>;
@@ -297,6 +319,11 @@ export interface HackformsEscrow extends BaseContract {
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    hasDeal(
+      formId: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     hasEnoughBalance(
       formId: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
@@ -322,6 +349,11 @@ export interface HackformsEscrow extends BaseContract {
     fundDeal(
       formId: PromiseOrValue<string>,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    hasDeal(
+      formId: PromiseOrValue<string>,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     hasEnoughBalance(

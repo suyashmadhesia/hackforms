@@ -2,17 +2,14 @@ import { useEffect, useState } from "react";
 import { loginUser } from "./api";
 import { setAuthCode, storeEOA } from "./storage";
 import { storePrivateKey, storePublicKeyData } from "./security";
+import { HackformsEscrowContractHandler } from "./contract";
+import { useAccount, useSigner } from "wagmi";
+import { ethers } from "ethers";
 
 
 export function useGetLoginStatus() {
     const [userLoggedIn, setUserLoggedIn] = useState(false);
 
-    // const handleUserData = (res: ResponseData<LoginResponse>) => {
-    //     if (res.err === undefined ){
-    //         storeEOA(res.data?.user.eoa as string);
-    //         setAuthCode(res.data?.token as string);
-    //     }
-    // }
 
     useEffect(() => {
         loginUser({}).then((res) => {
@@ -30,4 +27,19 @@ export function useGetLoginStatus() {
     },[]);
 
     return userLoggedIn;
+}
+
+export function useEscrowContract() {
+    const [escrowContract, setEscrowContract] = useState<HackformsEscrowContractHandler | undefined>();
+    // const {data} = useSigner();
+    const {isConnected} = useAccount();
+
+    useEffect(() => {
+        if (isConnected) {
+            let contract = new HackformsEscrowContractHandler();
+            setEscrowContract(contract);
+        }
+    }, [isConnected])
+
+    return escrowContract;
 }

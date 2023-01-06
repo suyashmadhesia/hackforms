@@ -107,7 +107,9 @@ contract HackformsEscrow {
         return true;
     }
 
-    
+    function hasDeal(string memory formId) external view returns(bool) {
+        return _deals[formId].doesExists;
+    }
 
     function _disburse(address to, string memory formId, uint256 amount) internal returns (bool) {
         require(_deals[formId].balance > amount, "Insufficient balance in the deal");

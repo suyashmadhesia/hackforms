@@ -66,9 +66,22 @@ export function attachSigner( contract: HackformsEscrow, signer: ethers.provider
 }
 
 
+export function getErrorReason(err: any) {
+    try {
+        const code =( err as any).data.replace('Reverted ','');
+        let reason = ethers.utils.toUtf8String('0x' + code.substr(138));
+        return reason;
+    }catch(e) {
+        return 'Transaction was rejected'
+    }
+}
 
 export async function getBalanceOfDeal(contract: HackformsEscrow, formId: string) {
-    return formatBigNumberToEth(await contract.balanceOfDeal(formId));
+    try {
+        return await contract.balanceOfDeal(formId);
+    }catch(e){
+        return parseToBigNumber('0')
+    }
 }
 
 export function formatBigNumberToEth(num: ethers.BigNumber) {
@@ -81,7 +94,7 @@ export function parseToBigNumber(eth: string) {
 
 
 export async function getBalanceOfAddress(contract: HackformsEscrow) {
-    return formatBigNumberToEth(await contract.balance());
+    return await contract.balance();
 }
 
 export async function disburseFund(contract: HackformsEscrow, data: {
@@ -95,10 +108,10 @@ export async function disburseFund(contract: HackformsEscrow, data: {
 
 export async function fundDeal(contract: HackformsEscrow, data: {
     formId: string,
-    amount: string
+    amount: ethers.BigNumber
 }) {
     return await contract.fundDeal(data.formId, {
-        value: parseToBigNumber(data.amount)
+        value: data.amount
     })
 }
 
@@ -113,7 +126,7 @@ export async function hasEnoughBalance(contract: HackformsEscrow, data: {
 
 export class HackformsEscrowContractHandler {
 
-    public readonly contract: HackformsEscrow;
+    public contract: HackformsEscrow;
     public signer?: ethers.providers.JsonRpcSigner
 
     constructor(signer?: ethers.providers.JsonRpcSigner) {
@@ -130,7 +143,7 @@ export class HackformsEscrowContractHandler {
     }
 
     attach(signer: ethers.providers.JsonRpcSigner) {
-        attachSigner(this.contract, signer);
+        this.contract = attachSigner(this.contract, signer);
     }
 
     async balanceOfDeal(formId: string) {
@@ -141,18 +154,18 @@ export class HackformsEscrowContractHandler {
         return getBalanceOfAddress(this.contract);
     }
 
-    async disburseFund(formId: string, rate: number, recps: string[]) {
-        return await disburseFund(this.contract, {
+    async disburseFund(formId: string, rate: number, recps: string[], signer: ethers.Signer) {
+        return await disburseFund(this.contract.connect(signer), {
             formId,
             rate: rate.toString(),
             recps
         });
     }
 
-    async fundDeal(formId: string, amount: number) {
-        return await fundDeal(this.contract, {
+    async fundDeal(formId: string, amount: ethers.BigNumber, signer: ethers.Signer) {
+        return await fundDeal(this.contract.connect(signer), {
             formId,
-            amount: amount.toString()
+            amount
         })
     }
 
@@ -165,5 +178,9 @@ export class HackformsEscrowContractHandler {
             formId,
             amount: amount.toString()
         })
+    }
+
+    async hasDeal(formId: string ){
+        return await this.contract.hasDeal(formId);
     }
 }
