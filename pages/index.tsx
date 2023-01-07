@@ -1,9 +1,9 @@
-// import ConnectWalletButton from "../components/ConnectWalletButton";
 
-import dynamic from "next/dynamic";
+import Home from "../components/Home";
+import Navbar from "../components/Navbar";
 
 
-export default function Home() {
+export default function Index() {
 
   // const ConnectWalletButton = dynamic(
   //   () => import('../components/ConnectWalletButton'),
@@ -12,6 +12,10 @@ export default function Home() {
 
   return (
     <div>
+       <div>
+        <Navbar />
+        <Home />
+      </div>
     </div>
   );
 }
