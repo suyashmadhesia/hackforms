@@ -1,4 +1,4 @@
-import { Box, Card, CardContent, Stack, Tooltip, Typography } from "@mui/material";
+import { Box, Button, Card, CardContent, Stack, Tooltip, Typography } from "@mui/material";
 import { FaEthereum } from "react-icons/fa";
 import { colors } from "../styles/theme";
 import { useAccount, useSigner } from "wagmi";
@@ -6,6 +6,8 @@ import { useEscrowContract } from "../common/custom_hooks";
 import { useEffect, useState } from "react";
 import { Web3Button } from "@web3modal/react";
 import { formatBigNumberToEth } from "../common/contract";
+import { removeAuthDetails } from "../common/security";
+import { useRouter } from "next/router";
 
 
 export default function DashboardInfoBar() {
@@ -14,6 +16,7 @@ export default function DashboardInfoBar() {
     const [balance, setBalance] = useState('0');
     const escrowContract = useEscrowContract();
     const signer = useSigner().data;
+    const router = useRouter()
 
     const fetchAccountBalance = async () => {
         if (escrowContract === undefined || signer === undefined) return;
@@ -73,6 +76,10 @@ export default function DashboardInfoBar() {
                         </CardContent>
                     </Card>
                 </Tooltip>
+                <Button variant="contained" disableElevation onClick={()=>{
+                    removeAuthDetails();
+                    router.replace('/login')
+                }} >Logout</Button>
        
     </Box>
 }

@@ -463,7 +463,7 @@ export default function FormPage(props: FormPageInterface) {
             paddingLeft: '2ch',
             paddingTop: '1ch'
         }} >
-            <IconButton onClick={() =>{router.back()}}>
+            <IconButton onClick={() =>{router.replace('/dashboard')}}>
                 <MdArrowBack />
             </IconButton>
         </Box>
