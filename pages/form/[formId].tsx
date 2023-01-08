@@ -11,18 +11,25 @@ import { decryptAES, decryptData, digestSHA256, encryptAES, encryptWithPublicKey
 import { getEOA, getItemFromLocalStorage, removeItemFromLocalStorage, storeItemInLocalStorage } from '../../common/storage';
 import { useEscrowContract, useGetLoginStatus } from '../../common/custom_hooks';
 import { useRouter } from 'next/router';
-import { apiServer } from '../../common/axios';
+import { apiServer, openServer } from '../../common/axios';
 import { AxiosError } from 'axios';
 import { MdArrowBack } from 'react-icons/md';
 import Link from 'next/link';
 import { useAccount } from 'wagmi';
 import { HackformsEscrowContractHandler, parseToBigNumber } from '../../common/contract';
 import { useWeb3Modal } from '@web3modal/react';
+import { ethers } from 'ethers';
 
 
 interface FormPageInterface {
     form: EncryptedForm;
     access: string | null;
+    count: number
+}
+
+async function fetchResponseCount(formId: string) {
+    const res = await openServer.get<ResponseData<number>>(`/api/response/count/${formId}`)
+    return res.data.data || 0
 }
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
@@ -31,10 +38,12 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     if (query['formId']  === undefined) {
         return {props: {}}
     }
-   const form = await fetchFormContentUsingId(query['formId'] as string)
+   const form = await fetchFormContentUsingId(query['formId'] as string);
+   const responseCount = await fetchResponseCount(query['formId'] as string)
    const props:FormPageInterface = {
     form,
-    access: (query['access'] || null) as string | null
+    access: (query['access'] || null) as string | null,
+    count: responseCount
    }
     // Pass data to the page via props
     return { props: {...props} }
@@ -183,8 +192,9 @@ export default function FormPage(props: FormPageInterface) {
 
     const checkBalanceConstraint = async () => {
         const formId = props.form.payload.meta.formId as string;
-        const amount = parseToBigNumber((props.form.payload.meta.rate as number).toString());
-        const hasEnoughBalance = await escrowContract.hashEnoughBalance(formId, amount);
+        const rate = parseToBigNumber((props.form.payload.meta.rate as number).toString());
+        const balanceOfDeal = await escrowContract.balanceOfDeal(formId);
+        const hasEnoughBalance = balanceOfDeal.sub(rate.mul(ethers.BigNumber.from(props.count))) > rate;
         if (!(hasEnoughBalance && !props.form.payload.meta.isClosed)) {
             setOpenBackdrop(false);
             setOpenPassDiag(false)
