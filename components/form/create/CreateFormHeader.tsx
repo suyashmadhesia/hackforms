@@ -160,7 +160,6 @@ export default function FormHeader() {
         const url = (formId === undefined) ? '/form/create': '/form/update'
         const res = await apiServer.post(url, requestData);
         dispatch(formActions.setFormId(res.data.data.form.id))
-        // dispatch(formActions.setRawContentUrl(res.data.data.rawContentUrl));
         removeStoredForm();
         setOpenBackdrop(false)
         route.replace(`/form/create?formId=${res.data.data.form.id}`)

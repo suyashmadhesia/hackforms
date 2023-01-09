@@ -88,7 +88,13 @@ export default function Login() {
         storePublicKeyData(loginRes.user.pubKey, getAddressFromPubKey(loginRes.user.pubKey));
         storePrivateKey(loginRes.user.secretKey);
         showLoading(false);
-        router.reload();
+        if (router.query.redirected !== undefined){
+            // console.log(loginStatus);
+            
+            router.back()
+        }else{
+            router.replace('/dashboard')
+        }
     }
 
     const loginUsingData = async () => {
@@ -119,7 +125,7 @@ export default function Login() {
                 clientId: process.env.NEXT_PUBLIC_WEB3AUTH_CLIENT_ID as string, // Get your Client ID from Web3Auth Dashboard
                 chainConfig: {
                      chainNamespace: 'eip155',
-                    // chainId: "0x1",
+                     chainId: "0x5",
                     // rpcTarget: "https://mainnet.infura.io/v3/776218ac4734478c90191dde8cae483c",
                  },
             });

@@ -82,14 +82,20 @@ export default function FormDeal(props: {form: EncryptedForm}) {
             try {
                 setOpenBackdrop(true)
                 const res = await escrowContract.fundDeal(props.form.payload.meta.formId as string, amount, signer as any );
-                console.log(res);
+                setOpenSnackbar(true);
+                setSnackDetail([SnackTypes.Success, 'Txn is completed reload after sometime for balance update.'])
+                // console.log(res);
+                res.wait().then(async (rs) => {
+                    setOpenSnackbar(true);
+                    setSnackDetail([SnackTypes.Success, 'Txn is completed reload after sometime for balance update.'])
+                    await fetchDealData()
+                })
                 
-                const recp = await res.wait();
-                await fetchDealData()
+                
                 setPaymentAmount('')
                 setOpenBackdrop(false);
                 setOpenSnackbar(true);
-                setSnackDetail([SnackTypes.Success, 'Txn is completed reload after sometime for balance update.'])
+                setSnackDetail([SnackTypes.Success, `Txn is submitted on txn hash ${res.hash} `])
             }catch (e) {
                 const reason = getErrorReason(e);
                 setOpenBackdrop(false);

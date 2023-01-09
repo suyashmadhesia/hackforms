@@ -78,6 +78,7 @@ export default function DashboardInfoBar() {
                 </Tooltip>
                 <Button variant="contained" disableElevation onClick={()=>{
                     removeAuthDetails();
+                    window.localStorage.clear()
                     router.replace('/login')
                 }} >Logout</Button>
        

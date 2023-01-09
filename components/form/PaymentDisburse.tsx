@@ -49,8 +49,12 @@ export default function PaymentDisburse(props: {
                 props.addressList,
                 signer as any
             );
+            console.log("Txn: ",txn);
+            
             txn.wait().then(async (rs) => {
                 const balance = await escrowContract.balanceOfDeal(props.form.payload.meta.formId as string);
+                console.log("Block: ", rs);
+                
                 setBalance(balance);
                 setSnackDetail(["info", `Payment is disbursed and can be checked using txn hash ${txn.hash}} `]);
                 setOpenSnackbar(true)
@@ -59,6 +63,8 @@ export default function PaymentDisburse(props: {
             setSnackDetail(["info", `Transaction is submitted and can be verified using txn hash ${txn.hash} `]);
             setOpenSnackbar(true)
         }catch(e) {
+            console.log(e);
+            
             const reason = getErrorReason(e);
             setOpenBackdrop(false);
             setSnackDetail(["error", reason]);

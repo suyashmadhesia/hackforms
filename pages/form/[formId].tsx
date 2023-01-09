@@ -123,7 +123,7 @@ export default function FormPage(props: FormPageInterface) {
         if (!enquiryCompleted || !isOnline) return;
         // console.log('Crossed');
         const pubKey = loadPublicKeyData();
-        if (props.form.header.access !== 'public') {
+        // if (props.form.header.access !== 'public') {
             if (props.form.payload.subRecord[pubKey.pubKey] === undefined && props.access === undefined) {
                 setError('You cannot open this form');
                 setOpenBackdrop(false);
@@ -141,13 +141,13 @@ export default function FormPage(props: FormPageInterface) {
                 
                 
             }
-        }else {
-            const model = new Model(JSON.parse(props.form.payload.data));
-            configureSurveyModel(props.form.payload.data, response?.payload.data);
-            setSurveyModel(model);
-            setError(null);
-            setOpenBackdrop(false);
-        }
+        // }else {
+        //     const model = new Model(JSON.parse(props.form.payload.data));
+        //     configureSurveyModel(props.form.payload.data, response?.payload.data);
+        //     setSurveyModel(model);
+        //     setError(null);
+        //     setOpenBackdrop(false);
+        // }
     }
 
     const configureSurveyModel = (data: string, response?: string) => {
@@ -332,7 +332,7 @@ export default function FormPage(props: FormPageInterface) {
         }
 
         const pubKey = loadPublicKeyData();
-        const access = (props.form.header.access === "public") ? "public": "protected";
+        const access = "protected";
         const surveyData = getSurveyResponse()
         const encDetails = await getEncryptedDataAndKey(JSON.stringify(surveyData))
 
@@ -405,8 +405,9 @@ export default function FormPage(props: FormPageInterface) {
         const pubKey = loadPublicKeyData();
         // const alternateKeyName = getAlternateSubRecordKey(pubKey.pubKey)
         const key = getKeyFromSubRecord(schema, pubKey.pubKey);
-        // const isSchemaOfForm = props.form.proof.hash === schema.proof.hash;
-        
+        if (schema.header.access === "public") {
+            return schema.payload.data;
+        }
         if (key === undefined && props.access === null) {
             setOpenBackdrop(false);
             setError('You cannot view the data');

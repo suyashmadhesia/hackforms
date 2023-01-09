@@ -61,8 +61,10 @@ export default function CreateForm({form}: {form: EncryptedForm}) {
                 storeForm(form.payload.data);
                 dispatch(formActions.loadEncForm(form));
                 
+            }else{
+                setOpenPassDiag(true)
             }
-            setOpenPassDiag(true)
+            
               
         }else if(hasFormTicker()) { 
             removeStoredForm();

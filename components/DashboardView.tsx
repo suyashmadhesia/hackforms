@@ -11,6 +11,7 @@ import { useRouter } from "next/router";
 import { getUrlFromCid } from "../common";
 import Link from "next/link";
 import DashboardInfoBar from "./DashboardInfoBar";
+import { useGetLoginStatus } from "../common/custom_hooks";
 
 
 async function fetchAllMyForms() {
@@ -32,22 +33,29 @@ function FormTableRow(props: {title: string, cid: string, formId: string, access
 
     const router = useRouter()
 
+   
     const handlePaperClick = () => { 
         router.push(`/form/${props.formId}`)
+    }
+
+    const onCidClick = (e: MouseEvent) => {
+        e.preventDefault()
+        const getUrl = getUrlFromCid(props.cid);
+        navigator.clipboard.writeText(getUrl)
     }
 
     return <Link style={{
         textDecoration: 'none'
     }} href={`/form/${props.formId}`}>
-    <Paper onClick={() => {handlePaperClick()}} variant="outlined" sx={{
+    <Paper  variant="outlined" sx={{
         paddingY: '2ch',
         paddingX: '4ch'
     }} >
         <Stack direction="row" alignItems={'center'} justifyContent='space-between'>
             <Box width={'60%'}>
             <Stack direction='column'>
-                <Typography>{props.title}</Typography>
-                    <Typography variant='caption' >{props.cid}</Typography>
+                <Typography onClick={() => {handlePaperClick()}}>{props.title}</Typography>
+                    <Typography onClick={(e) => {onCidClick(e as any)}} variant='caption' >{props.cid}</Typography>
             </Stack>
             </Box>
             {
